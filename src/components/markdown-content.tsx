@@ -24,6 +24,12 @@ interface ContentPart {
   display?: boolean;
 }
 
+function sanitizeKatexInput(input: string) {
+  // KaTeX strict mode warns on NBSP (U+00A0) which can creep in from copied content.
+  // Normalizing it avoids noisy build logs and potential rendering quirks.
+  return input.replace(/\u00A0/g, ' ');
+}
+
 // Helper function to process text and replace inline katex shortcodes
 function processTextWithInlineKatex(text: string): React.ReactNode[] {
   const inlineKatexRegex = /\{\{<\s*katex\s*>\}\}([\s\S]*?)\{\{<\s*\/katex\s*>\}\}/g;
@@ -42,7 +48,7 @@ function processTextWithInlineKatex(text: string): React.ReactNode[] {
     }
     
     // Add katex component
-    const katexContent = match[1].trim();
+    const katexContent = sanitizeKatexInput(match[1].trim());
     parts.push(<InlineMath key={`katex-inline-${keyIndex++}`} math={katexContent} />);
     
     lastIndex = match.index + match[0].length;
@@ -224,9 +230,9 @@ export function MarkdownContent({ content, title }: MarkdownContentProps) {
           return (
             <div key={index} className={part.display ? 'my-4 sm:my-6' : 'inline'}>
               {part.display ? (
-                <BlockMath math={part.katexContent!} />
+                <BlockMath math={sanitizeKatexInput(part.katexContent!)} />
               ) : (
-                <InlineMath math={part.katexContent!} />
+                <InlineMath math={sanitizeKatexInput(part.katexContent!)} />
               )}
             </div>
           );
