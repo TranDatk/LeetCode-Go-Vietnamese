@@ -16,8 +16,9 @@ export function remarkColumns() {
     const columnsNodes: Array<{ node: ColumnsNode; index: number }> = [];
 
     // First pass: find all columns shortcodes
-    visit(tree, (node: any, index: number, parent: any) => {
+    visit(tree, (node: any, index?: number, parent?: any) => {
       if (node.type === 'paragraph') {
+        if (typeof index !== 'number') return;
         const text = (node.children[0] as Text)?.value || '';
         
         // Match {{< columns >}}
