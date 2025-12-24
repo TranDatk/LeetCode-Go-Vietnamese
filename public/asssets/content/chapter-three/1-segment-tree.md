@@ -1,91 +1,91 @@
 ---
-title: 3.1 Segment Tree
+title: 3.1 Cây đoạn (Segment Tree)
 type: docs
 weight: 1
 ---
 
-# 线段树 Segment Tree
+# Cây đoạn (Segment Tree)
 
-线段树 Segment tree 是一种二叉树形数据结构，1977年由 Jon Louis Bentley 发明，用以存储区间或线段，并且允许快速查询结构内包含某一点的所有区间。
+Cây đoạn (Segment Tree) là một cấu trúc dữ liệu dạng cây nhị phân (binary tree) do Jon Louis Bentley đề xuất vào năm 1977. Nó dùng để lưu trữ các đoạn/miền (interval/segment), và cho phép truy vấn nhanh các đoạn phủ một điểm nhất định.
 
-一个包含 {{< katex >}}n {{< /katex >}}个区间的线段树，空间复杂度为 {{< katex >}} O(n) {{< /katex >}}，查询的时间复杂度则为{{< katex >}}O(log n+k) {{< /katex >}}，其中 {{< katex >}} k {{< /katex >}} 是符合条件的区间数量。线段树的数据结构也可推广到高维度。
+Với một cây đoạn lưu trữ {{< katex >}}n {{< /katex >}} đoạn, độ phức tạp bộ nhớ (space complexity) là {{< katex >}} O(n) {{< /katex >}}; còn truy vấn có độ phức tạp {{< katex >}}O(log n+k) {{< /katex >}}, trong đó {{< katex >}} k {{< /katex >}} là số đoạn thỏa điều kiện. Cấu trúc cây đoạn cũng có thể mở rộng lên không gian nhiều chiều (higher-dimensional).
 
-## 一. 什么是线段树
+## I. Cây đoạn là gì?
 
-以一维的线段树为例。
+Lấy ví dụ cây đoạn một chiều (1D segment tree).
 
 ![](https://img.halfrost.com/Blog/ArticleImage/153_1.png)
 
 
-令 S 是一维线段的集合。将这些线段的端点坐标由小到大排序，令其为{{< katex >}}x_{1},x_{2},\cdots ,x_{m} {{< /katex >}}。我们将被这些端点切分的每一个区间称为“单位区间”（每个端点所在的位置会单独成为一个单位区间），从左到右包含：
+Gọi S là tập các đoạn thẳng một chiều. Sắp xếp các tọa độ đầu mút theo thứ tự tăng dần, ta được dãy {{< katex >}}x_{1},x_{2},\cdots ,x_{m} {{< /katex >}}. Mỗi khoảng sau khi bị các đầu mút này “cắt” ra được gọi là **khoảng đơn vị** (unit interval) — lưu ý: vị trí đúng tại mỗi đầu mút cũng được xem như một khoảng đơn vị riêng. Từ trái sang phải ta có:
 
 {{< katex display>}} 
 (-\infty ,x_{1}),[x_{1},x_{1}],(x_{1},x_{2}),[x_{2},x_{2}],...,(x_{m-1},x_{m}),[x_{m},x_{m}],(x_{m},+\infty )
 {{< /katex >}}
 
-线段树的结构为一个二叉树，每个节点都代表一个坐标区间，节点 N 所代表的区间记为 Int(N)，则其需符合以下条件：
+Cấu trúc cây đoạn là một cây nhị phân. Mỗi nốt biểu diễn một đoạn tọa độ; gọi đoạn của nốt N là Int(N). Cây đoạn thỏa các điều kiện:
 
-- 其每一个叶节点，从左到右代表每个单位区间。
-- 其内部节点代表的区间是其两个儿子代表的区间之并集。
-- 每个节点（包含叶子）中有一个存储线段的数据结构。若一个线段 S 的坐标区间包含 Int(N) 但不包含 Int(parent(N))，则节点 N 中会存储线段 S。
+- **Mỗi nốt lá** (leaf node), theo thứ tự từ trái qua phải, tương ứng với từng khoảng đơn vị (unit interval).
+- **Mỗi nốt trong** (internal node) biểu diễn hợp (union) của hai đoạn con mà nó quản lý.
+- **Mỗi nốt (kể cả lá)** có một cấu trúc để lưu các đoạn. Nếu một đoạn S **bao phủ** Int(N) nhưng **không bao phủ** Int(parent(N)) (tức là nốt cha của N), thì S sẽ được lưu tại nốt N.
 
 
 ![](https://img.halfrost.com/Blog/ArticleImage/153_2.png)
 
 
-线段树是二叉树，其中每个节点代表一个区间。通常，一个节点将存储一个或多个合并的区间的数据，以便可以执行查询操作。
+Cây đoạn là một cây nhị phân mà mỗi nốt đại diện cho một khoảng. Thông thường, một nốt sẽ lưu thông tin tổng hợp của một hoặc nhiều khoảng con để phục vụ truy vấn.
 
 
-## 二. 为什么需要这种数据结构
+## II. Vì sao cần cấu trúc này?
 
-许多问题要求我们基于对可用数据范围或区间的查询来给出结果。这可能是一个繁琐而缓慢的过程，尤其是在查询数量众多且重复的情况下。线段树让我们以对数时间复杂度有效地处理此类查询。
+Nhiều bài toán yêu cầu trả lời dựa trên truy vấn theo phạm vi/khoảng (range/interval queries). Nếu cứ quét tuyến tính thì sẽ bị chậm, đặc biệt khi số lượng truy vấn lớn và lặp lại nhiều lần. Cây đoạn cho phép xử lý những truy vấn này hiệu quả với độ phức tạp logarit.
 
-线段树可用于计算几何和[地理信息系统领域](https://en.wikipedia.org/wiki/Geographic_information_systems)。例如，距中心参考点/原点一定距离的空间中可能会有大量点。假设我们要查找距原点一定距离范围内的点。一个普通的查找表将需要对所有可能的点或所有可能的距离进行线性扫描（假设是散列图）。线段树使我们能够以对数时间实现这一需求，而所需空间却少得多。这样的问题称为[平面范围搜索](https://en.wikipedia.org/wiki/Range_searching)。有效地解决此类问题至关重要，尤其是在处理动态数据且瞬息万变的情况下（例如，用于空中交通的雷达系统）。下文会以线段树解决 Range Sum Query problem 为例。
+Cây đoạn còn xuất hiện trong hình học tính toán (computational geometry) và [hệ thống thông tin địa lý (Geographic Information Systems)](https://en.wikipedia.org/wiki/Geographic_information_systems). Ví dụ, trong không gian có thể có rất nhiều điểm cách một điểm tham chiếu/gốc tọa độ một khoảng nào đó. Nếu ta cần tìm các điểm nằm trong một dải khoảng cách nhất định tới gốc, cách làm “thô” như dùng bảng tra cứu rồi quét tuyến tính qua tất cả điểm (hoặc tất cả khoảng cách, giả sử dùng bảng băm) sẽ rất tốn thời gian. Cây đoạn giúp truy vấn kiểu này trong thời gian logarit, trong khi bộ nhớ lại tương đối tiết kiệm. Những bài toán như vậy thuộc nhóm [tìm kiếm theo miền (range searching)](https://en.wikipedia.org/wiki/Range_searching). Việc giải hiệu quả rất quan trọng, nhất là khi dữ liệu động thay đổi liên tục (ví dụ: hệ thống radar điều phối không lưu). Phần dưới sẽ lấy ví dụ bài toán **truy vấn tổng đoạn** (Range Sum Query).
 
 ![](https://img.halfrost.com/Blog/ArticleImage/153_3.png)
 
 
-上图即作为范围查询的线段树。
+Hình trên minh hoạ cây đoạn dùng cho truy vấn theo phạm vi (range query).
 
-## 三. 构造线段树
+## III. Xây dựng cây đoạn (Segment Tree)
 
 
-假设数据存在 size 为 n 的 arr[] 中。
+Giả sử dữ liệu nằm trong mảng `arr[]` có kích thước `n`.
 
-1. 线段树的根通常代表整个数据区间。这里是 arr[0：n-1]。
-2. 树的每个叶子代表一个范围，其中仅包含一个元素。 因此，叶子代表 arr[0]，arr[1] 等等，直到 arr[n-1]。
-3. 树的内部节点将代表其子节点的合并或并集结果。
-4. 每个子节点可代表其父节点所代表范围的大约一半。(二分的思想)
+1. **Nốt gốc** (root) thường đại diện toàn bộ đoạn dữ liệu, ở đây là `arr[0:n-1]`.
+2. **Mỗi lá** (leaf) đại diện cho một đoạn chỉ có 1 phần tử: `arr[0]`, `arr[1]`, …, `arr[n-1]`.
+3. **Nốt trong** lưu kết quả tổng hợp từ hai nốt con.
+4. Mỗi nốt con thường quản lý “khoảng một nửa” của nốt cha (tư duy chia đôi / binary split).
 
-使用大小为 {{< katex >}}\approx 4 \ast n {{< /katex >}} 的数组可以轻松表示 n 个元素范围的线段树。（[Stack Overflow](http://stackoverflow.com/q/28470692/2844164) 对原因进行了很好的讨论。如果你还不确定，请不要担心。本文将在稍后进行讨论。）
+Dùng một mảng kích thước khoảng {{< katex >}}4 \cdot n \approx 4n{{< /katex >}} là đủ để biểu diễn cây đoạn cho `n` phần tử. ([Stack Overflow](http://stackoverflow.com/q/28470692/2844164) có giải thích hay; nếu bạn chưa rõ thì cứ yên tâm, đây là “mốc” thường dùng trong thực tế.)
 
-下标为 i 的节点有两个节点，下标分别为 {{< katex >}}(2 \ast i + 1) {{< /katex >}}和 {{< katex >}}(2 \ast i + 2){{< /katex >}}。
+Với nốt ở chỉ số `i`, hai con của nó nằm ở {{< katex >}}(2 \cdot i + 1){{< /katex >}} và {{< katex >}}(2 \cdot i + 2){{< /katex >}}.
 
 ![](https://img.halfrost.com/Blog/ArticleImage/153_4.png)
 
-线段树看上去很直观并且非常适合递归构造。
+Cây đoạn khá trực quan và rất hợp để xây dựng bằng đệ quy (recursion).
 
-我们将使用数组 tree[] 来存储线段树的节点（初始化为全零）。 下标从 0 开始。
+Ta sẽ dùng mảng `tree[]` để lưu các nốt của cây đoạn (khởi tạo toàn 0). Chỉ số bắt đầu từ 0.
 
-- 树的节点在下标 0 处。因此 tree[0] 是树的根。
-- tree[i] 的孩子存在 tree[2 * i + 1] 和 tree[2 * i + 2] 中。
-- 用额外的 0 或 null 值填充 arr[]，使得 {{< katex >}}n = 2^{k} {{< /katex >}}（其中 n 是 arr[] 的总长度，而 k 是非负整数。）
-- 叶子节点的下标取值范围在 {{< katex >}} \in [2^{k}-1, 2^{k+1}-2]{{< /katex >}}
+- **Gốc** ở `tree[0]`.
+- **Con của `tree[i]`** nằm ở `tree[2*i+1]` và `tree[2*i+2]`.
+- Có thể “đệm” (pad) thêm `0` hoặc `null` vào `arr[]` để làm cho {{< katex >}}n = 2^{k} {{< /katex >}} (với `n` là tổng độ dài của `arr[]`, `k` là số nguyên không âm).
+- Chỉ số của các lá nằm trong khoảng {{< katex >}} [2^{k}-1, 2^{k+1}-2]{{< /katex >}}.
 
 ![](https://img.halfrost.com/Blog/ArticleImage/153_5.png)
 
-构造线段树的代码如下：
+Code xây dựng cây đoạn như sau:
 
 
 ```go
-// SegmentTree define
+// SegmentTree (cây đoạn / segment tree) - định nghĩa
 type SegmentTree struct {
 	data, tree, lazy []int
 	left, right      int
 	merge            func(i, j int) int
 }
 
-// Init define
+// Init - khởi tạo
 func (st *SegmentTree) Init(nums []int, oper func(i, j int) int) {
 	st.merge = oper
 	data, tree, lazy := make([]int, len(nums)), make([]int, 4*len(nums)), make([]int, 4*len(nums))
@@ -98,7 +98,7 @@ func (st *SegmentTree) Init(nums []int, oper func(i, j int) int) {
 	}
 }
 
-// 在 treeIndex 的位置创建 [left....right] 区间的线段树
+// Tạo cây đoạn cho đoạn [left...right] tại vị trí treeIndex
 func (st *SegmentTree) buildSegmentTree(treeIndex, left, right int) {
 	if left == right {
 		st.tree[treeIndex] = st.data[left]
@@ -119,36 +119,36 @@ func (st *SegmentTree) rightChild(index int) int {
 }
 ```
 
-笔者将线段树合并的操作变成了一个函数。合并操作根据题意变化，常见的有加法，取 max，min 等等。
+Ở đây, tác giả đưa “phép gộp” (merge) thành một hàm. Tùy bài mà phép gộp sẽ khác nhau: cộng (sum), lấy lớn nhất (max), nhỏ nhất (min), v.v.
 
-我们以 arr[] = [18, 17, 13, 19, 15, 11, 20, 12, 33, 25 ] 为例构造线段树：
+Ví dụ với `arr[] = [18, 17, 13, 19, 15, 11, 20, 12, 33, 25]`, cây đoạn sẽ như sau:
 
 ![](https://img.halfrost.com/Blog/ArticleImage/153_6.png)
 
-线段树构造好以后，数组里面的数据是：
+Sau khi xây dựng xong, mảng `tree[]` có thể trông như sau:
 
 ```c
 tree[] = [ 183, 82, 101, 48, 34, 43, 58, 35, 13, 19, 15, 31, 12, 33, 25, 18, 17, 0, 0, 0, 0, 0, 0, 11, 20, 0, 0, 0, 0, 0, 0 ]
 ```
 
-线段树用 0 填充到 4*n 个元素。
+Ta đệm `0` để mảng có đủ ~`4*n` phần tử.
 
 
-> LeetCode 对应题目是 [218. The Skyline Problem](https://books.halfrost.com/leetcode/ChapterFour/0200~0299/0218.The-Skyline-Problem/)、[303. Range Sum Query - Immutable](https://books.halfrost.com/leetcode/ChapterFour/0300~0399/0303.Range-Sum-Query-Immutable/)、[307. Range Sum Query - Mutable](https://books.halfrost.com/leetcode/ChapterFour/0300~0399/0307.Range-Sum-Query-Mutable/)、[699. Falling Squares](https://books.halfrost.com/leetcode/ChapterFour/0600~0699/0699.Falling-Squares/)
+> Bài LeetCode liên quan: [218. The Skyline Problem](https://books.halfrost.com/leetcode/ChapterFour/0200~0299/0218.The-Skyline-Problem/)、[303. Range Sum Query - Immutable](https://books.halfrost.com/leetcode/ChapterFour/0300~0399/0303.Range-Sum-Query-Immutable/)、[307. Range Sum Query - Mutable](https://books.halfrost.com/leetcode/ChapterFour/0300~0399/0307.Range-Sum-Query-Mutable/)、[699. Falling Squares](https://books.halfrost.com/leetcode/ChapterFour/0600~0699/0699.Falling-Squares/)
 
-## 四. 线段树的查询
+## IV. Truy vấn trên cây đoạn
 
-线段树的查询方法有两种，一种是直接查询，另外一种是懒查询。
+Có hai cách truy vấn trên cây đoạn: **truy vấn trực tiếp** (direct query) và **truy vấn lười** (lazy query) — thường đi kèm với **cập nhật lười** (lazy update / lazy propagation).
 
-### 1. 直接查询
+### 1. Truy vấn trực tiếp (Direct Query)
 
-当查询范围与当前节点表示的范围完全匹配时，该方法返回结果。否则，它会更深入地遍历线段树树，以找到与节点的一部分完全匹配的节点。
+Khi đoạn cần truy vấn khớp hoàn toàn với đoạn mà nốt hiện tại đại diện, ta trả về ngay kết quả tại nốt đó. Nếu không, ta đi sâu xuống các nốt con để tách truy vấn thành các phần khớp hoàn toàn.
 
 
 ```go
-// 查询 [left....right] 区间内的值
+// Truy vấn giá trị trên đoạn [left...right]
 
-// Query define
+// Query
 func (st *SegmentTree) Query(left, right int) int {
 	if len(st.data) > 0 {
 		return st.queryInTree(0, 0, len(st.data)-1, left, right)
@@ -156,7 +156,8 @@ func (st *SegmentTree) Query(left, right int) int {
 	return 0
 }
 
-// 在以 treeIndex 为根的线段树中 [left...right] 的范围里，搜索区间 [queryLeft...queryRight] 的值
+// Trong cây đoạn có gốc treeIndex (đang quản lý [left...right]),
+// truy vấn đoạn [queryLeft...queryRight]
 func (st *SegmentTree) queryInTree(treeIndex, left, right, queryLeft, queryRight int) int {
 	if left == queryLeft && right == queryRight {
 		return st.tree[treeIndex]
@@ -176,25 +177,25 @@ func (st *SegmentTree) queryInTree(treeIndex, left, right, queryLeft, queryRight
 ![](https://img.halfrost.com/Blog/ArticleImage/153_7.png)
 
 
-在上面的示例中，查询的区间范围为[2，8] 的元素之和。没有任何线段可以完全代表[2，8] 范围。但是可以观察到，可以使用范围 [2，2]，[3，4]，[5，7]，[8，8] 这 4 个区间构成 [8，8]。快速验证 [2,8] 处的输入元素之和为 13 + 19 + 15 + 11 + 20 + 12 + 33 = 123。[2，2]，[3，4]，[5，7] 和 [8，8] 的节点总和是 13 + 34 + 43 + 33 = 123。答案正确。
+Trong ví dụ trên, ta truy vấn tổng các phần tử trong đoạn \([2, 8]\). Không có nốt nào biểu diễn đúng toàn bộ \([2, 8]\), nhưng ta có thể “ghép” từ các đoạn con khớp hoàn toàn: \([2,2]\), \([3,4]\), \([5,7]\), \([8,8]\). Kiểm tra nhanh: tổng giá trị là \(13 + 19 + 15 + 11 + 20 + 12 + 33 = 123\). Tổng ở các nốt tương ứng là \(13 + 34 + 43 + 33 = 123\). Kết quả đúng.
 
 
 
-### 2. 懒查询
+### 2. Truy vấn lười (Lazy Query)
 
-懒查询对应懒更新，两者是配套操作。在区间更新时，并不直接更新区间内所有节点，而是把区间内节点增减变化的值存在 lazy 数组中。等到下次查询的时候再把增减应用到具体的节点上。这样做也是为了分摊时间复杂度，保证查询和更新的时间复杂度在 O(log n) 级别，不会退化成 O(n) 级别。
+Truy vấn lười đi kèm với cập nhật lười (lazy update / lazy propagation). Khi cập nhật một đoạn, ta **không** cập nhật ngay toàn bộ các nốt bên dưới, mà “ghi nợ” phần thay đổi vào mảng `lazy[]`. Tới khi truy vấn chạm vào nốt đó, ta mới “đẩy” (push) phần thay đổi xuống để đảm bảo thời gian truy vấn/cập nhật vẫn giữ ở mức \(O(\log n)\), tránh xấu đi thành \(O(n)\).
 
-懒查询节点的步骤：
+Các bước khi gặp một nốt “lười” (lazy node):
 
-1. 先判断当前节点是否是懒节点。通过查询 lazy[i] 是否为 0 判断。如果是懒节点，将它的增减变化应用到该节点上。并且更新它的孩子节点。这一步和更新操作的第一步完全一样。
-2. 递归查询子节点，以找到适合的查询节点。
+1. Kiểm tra nốt hiện tại có “lười” không bằng `lazy[i] != 0`. Nếu có, áp dụng phần cập nhật lên nốt hiện tại và cập nhật/lan xuống các con (giống hệt bước đầu của cập nhật lười).
+2. Đệ quy xuống các nốt con để tìm các đoạn con phù hợp cho truy vấn.
 
-具体代码如下：
+Code minh hoạ:
 
 ```go
-// 查询 [left....right] 区间内的值
+// Truy vấn giá trị trên đoạn [left...right]
 
-// QueryLazy define
+// QueryLazy
 func (st *SegmentTree) QueryLazy(left, right int) int {
 	if len(st.data) > 0 {
 		return st.queryLazyInTree(0, 0, len(st.data)-1, left, right)
@@ -235,24 +236,24 @@ func (st *SegmentTree) queryLazyInTree(treeIndex, left, right, queryLeft, queryR
 ```
 
 
-## 五. 线段树的更新
+## V. Cập nhật (Update) trên cây đoạn
 
-### 1. 单点更新
+### 1. Cập nhật một điểm (Point Update)
 
-单点更新类似于 `buildSegTree`。更新树的叶子节点的值，该值与更新后的元素相对应。这些更新的值会通过树的上层节点把影响传播到根。
+Cập nhật một điểm khá giống `buildSegTree`: ta cập nhật giá trị ở nốt lá tương ứng với phần tử được cập nhật, rồi “kéo” (pull) thay đổi lên các nốt tổ tiên cho tới gốc.
 
 
 ```go
-// 更新 index 位置的值
+// Cập nhật giá trị tại vị trí index
 
-// Update define
+// Update
 func (st *SegmentTree) Update(index, val int) {
 	if len(st.data) > 0 {
 		st.updateInTree(0, 0, len(st.data)-1, index, val)
 	}
 }
 
-// 以 treeIndex 为根，更新 index 位置上的值为 val
+// Với gốc treeIndex, cập nhật vị trí index thành val
 func (st *SegmentTree) updateInTree(treeIndex, left, right, index, val int) {
 	if left == right {
 		st.tree[treeIndex] = val
@@ -270,37 +271,37 @@ func (st *SegmentTree) updateInTree(treeIndex, left, right, index, val int) {
 
 ![](https://img.halfrost.com/Blog/ArticleImage/153_8.png)
 
-在此示例中，下标为（在原始输入数据中）1、3 和 6 处的元素分别增加了 +3，-1 和 +2。可以看到更改如何沿树传播，一直到根。
+Trong ví dụ này, các phần tử ở chỉ số (trong dữ liệu gốc) 1, 3 và 6 lần lượt thay đổi +3, -1, +2. Bạn có thể thấy thay đổi được lan dần lên tới nốt gốc.
 
 
-### 2. 区间更新
+### 2. Cập nhật đoạn (Range Update)
 
 
-线段树仅更新单个元素，非常有效，时间复杂度 O(log n)。 但是，如果我们要更新一系列元素怎么办？按照当前的方法，每个元素都必须独立更新，每个元素都会花费一些时间。分别更新每一个叶子节点意味着要多次处理它们的共同祖先。祖先节点可能被更新多次。如果想要减少这种重复计算，该怎么办？
+Cây đoạn cập nhật một phần tử rất hiệu quả ( \(O(\log n)\) ). Nhưng nếu ta cần cập nhật cả một dải phần tử (một đoạn) thì sao? Nếu cập nhật từng phần tử độc lập, ta sẽ phải “đụng” đi đụng lại cùng một số nốt tổ tiên chung, gây lặp tính toán. Làm sao để tránh cập nhật trùng lặp đó?
 
 
 ![](https://img.halfrost.com/Blog/ArticleImage/153_11.png)
 
-在上面的示例中，根节点被更新了三次，而编号为 82 的节点被更新了两次。这是因为更新叶子节点对上层父亲节点有影响。最差的情况，查询的区间内不包含频繁更新的元素，于是需要花费很多时间更新不怎么访问的节点。增加额外的 lazy 数组，可以减少不必要的计算，并且能按需处理节点。
+Trong ví dụ trên, nốt gốc bị cập nhật 3 lần và nốt có giá trị 82 bị cập nhật 2 lần, vì cập nhật lá sẽ ảnh hưởng lên các nốt phía trên. Trường hợp xấu hơn là: ta cập nhật nhiều nhưng lại ít khi truy vấn vào những vùng đó, dẫn tới tốn thời gian cập nhật những nốt “ít dùng”. Thêm mảng `lazy[]` giúp giảm tính toán không cần thiết và chỉ xử lý khi thực sự cần.
 
-使用另一个数组 lazy[]，它的大小与我们的线段树 array tree[] 完全相同，代表一个惰性节点。当访问或查询该节点时，lazy[i] 中保留需要增加或者减少该节点 tree[i] 的数量。 当 lazy[i] 为 0 时，表示 tree[i] 该节点不是惰性的，并且没有缓存的更新。
+Ta dùng thêm mảng `lazy[]` cùng kích thước với `tree[]`. `lazy[i]` lưu “mức thay đổi còn nợ” cần áp dụng cho nốt `tree[i]` (tăng/giảm). Khi `lazy[i] = 0`, nghĩa là nốt không còn cập nhật treo nào.
 
-更新区间内节点的步骤：
+Các bước cập nhật đoạn (range update):
 
-1. 先判断当前节点是否是懒节点。通过查询 lazy[i] 是否为 0 判断。如果是懒节点，将它的增减变化应用到该节点上。并且更新它的孩子节点。
-2. 如果当前节点代表的区间位于更新范围内，则将当前更新操作应用于当前节点。
-3. 递归更新子节点。
+1. Nếu nốt hiện tại là nốt lười (`lazy[i] != 0`), hãy áp dụng cập nhật lên nốt đó và đẩy phần lười xuống các con.
+2. Nếu đoạn của nốt nằm hoàn toàn trong đoạn cần cập nhật, áp dụng cập nhật lên nốt và ghi `lazy` cho các con (nếu cần).
+3. Ngược lại, đệ quy xuống các con, rồi gộp (merge) lại lên nốt hiện tại.
 
-具体代码如下：
+Code minh hoạ:
 
 ```go
 
-// 更新 [updateLeft....updateRight] 位置的值
-// 注意这里的更新值是在原来值的基础上增加或者减少，而不是把这个区间内的值都赋值为 x，区间更新和单点更新不同
-// 这里的区间更新关注的是变化，单点更新关注的是定值
-// 当然区间更新也可以都更新成定值，如果只区间更新成定值，那么 lazy 更新策略需要变化，merge 策略也需要变化，这里暂不详细讨论
+// Cập nhật đoạn [updateLeft...updateRight]
+// Lưu ý: cập nhật ở đây là cộng/trừ so với giá trị hiện tại, không phải gán cả đoạn thành x.
+// Cập nhật đoạn (range update) tập trung vào "độ thay đổi" (delta), còn cập nhật điểm (point update) thường là gán giá trị cụ thể.
+// Nếu muốn cập nhật đoạn theo kiểu gán giá trị cố định, thì chiến lược lazy và merge sẽ phải thay đổi; phần này tạm không bàn sâu.
 
-// UpdateLazy define
+// UpdateLazy
 func (st *SegmentTree) UpdateLazy(updateLeft, updateRight, val int) {
 	if len(st.data) > 0 {
 		st.updateLazyInTree(0, 0, len(st.data)-1, updateLeft, updateRight, val)
@@ -348,73 +349,74 @@ func (st *SegmentTree) updateLazyInTree(treeIndex, left, right, updateLeft, upda
 
 ```
 
-> LeetCode 对应题目是 [218. The Skyline Problem](https://books.halfrost.com/leetcode/ChapterFour/0200~0299/0218.The-Skyline-Problem/)、[699. Falling Squares](https://books.halfrost.com/leetcode/ChapterFour/0600~0699/0699.Falling-Squares/)
+> Bài LeetCode liên quan: [218. The Skyline Problem](https://books.halfrost.com/leetcode/ChapterFour/0200~0299/0218.The-Skyline-Problem/)、[699. Falling Squares](https://books.halfrost.com/leetcode/ChapterFour/0600~0699/0699.Falling-Squares/)
 
-## 六. 时间复杂度分析
+## VI. Phân tích độ phức tạp (Complexity Analysis)
 
-让我们看一下构建过程。我们访问了线段树的每个叶子（对应于数组 arr[] 中的每个元素）。因此，我们处理大约 2 * n 个节点。这使构建过程时间复杂度为 O(n)。对于每个递归更新的过程都将丢弃区间范围的一半，以到达树中的叶子节点。这类似于二分搜索，只需要对数时间。更新叶子后，将更新树的每个级别上的直接祖先。这花费时间与树的高度成线性关系。
+Xét quá trình xây dựng: ta “chạm” tới mỗi lá (tương ứng mỗi phần tử của `arr[]`), nên tổng số nốt xử lý xấp xỉ \(2n\). Do đó, thời gian xây dựng là \(O(n)\).  
+Với cập nhật dạng đệ quy, mỗi bước ta loại bỏ khoảng một nửa đoạn đang xét để đi tới lá, tương tự tìm kiếm nhị phân (binary search) nên tốn \(O(\log n)\). Sau khi cập nhật lá, ta cập nhật các nốt tổ tiên dọc theo đường đi lên gốc, số lượng tỷ lệ với chiều cao cây.
 
 ![](https://img.halfrost.com/Blog/ArticleImage/153_9.png)
 
 
-4\*n 个节点可以确保将线段树构建为完整的二叉树，从而树的高度为 log(4\*n + 1) 向上取整。线段树读取和更新的时间复杂度都为 O(log n)。
+Mốc \(4n\) nốt giúp đảm bảo ta có đủ chỗ để biểu diễn dạng “gần như” cây nhị phân đầy đủ (complete binary tree), nên chiều cao xấp xỉ \(\lceil \log(4n + 1) \rceil\). Vì vậy, cả truy vấn và cập nhật thường có độ phức tạp \(O(\log n)\).
 
-## 七. 常见题型
+## VII. Dạng bài thường gặp
 
 
-### 1. Range Sum Queries
+### 1. Truy vấn tổng đoạn (Range Sum Queries)
 
 ![](https://img.halfrost.com/Blog/ArticleImage/153_10.png)
 
 
-Range Sum Queries 是 [Range Queries](https://en.wikipedia.org/wiki/Range_query_(data_structures)) 问题的子集。给定一个数据元素数组或序列，需要处理由元素范围组成的读取和更新查询。线段树 Segment Tree 和树状数组 Binary Indexed Tree (a.k.a. Fenwick Tree)) 都能很快的解决这类问题。
+Range Sum Queries là một nhánh con của [Range Queries](https://en.wikipedia.org/wiki/Range_query_(data_structures)). Ta có một mảng/chuỗi dữ liệu và cần xử lý các truy vấn đọc (read query) và cập nhật (update query) trên một đoạn chỉ số. Cả cây đoạn (Segment Tree) và cây Fenwick / BIT (Binary Indexed Tree, còn gọi là Fenwick Tree) đều giải dạng này rất nhanh.
 
-Range Sum Query 问题专门处理查询范围内的元素总和。这个问题存在许多变体，包括[不可变数据](https://leetcode.com/problems/range-sum-query-immutable/)，[可变数据](https://leetcode.com/problems/range-sum-query-mutable/)，[多次更新，单次查询](https://leetcode.com/problems/range-addition/) 和 [多次更新，多次查询](https://leetcode.com/problems/range-sum-query-2d-mutable/)。
-
-
-
-### 2. 单点更新    
-- [HDU 1166 敌兵布阵](http://acm.hdu.edu.cn/showproblem.php?pid=1166) update:单点增减 query:区间求和  
-- [HDU 1754 I Hate It](http://acm.hdu.edu.cn/showproblem.php?pid=1754) update:单点替换 query:区间最值  
-- [HDU 1394 Minimum Inversion Number](http://acm.hdu.edu.cn/showproblem.php?pid=1394) update:单点增减 query:区间求和  
-- [HDU 2795 Billboard](http://acm.hdu.edu.cn/showproblem.php?pid=2795) query:区间求最大值的位子(直接把update的操作在query里做了)
-
-### 3. 区间更新  
-
-- [HDU 1698 Just a Hook](http://acm.hdu.edu.cn/showproblem.php?pid=1698) update:成段替换 (由于只query一次总区间,所以可以直接输出 1 结点的信息)  
-- [POJ 3468 A Simple Problem with Integers](http://poj.org/problem?id=3468) update:成段增减 query:区间求和  
-- [POJ 2528 Mayor’s posters](http://poj.org/problem?id=2528) 离散化 + update:成段替换 query:简单hash  
-- [POJ 3225 Help with Intervals](http://poj.org/problem?id=3225) update:成段替换,区间异或 query:简单hash
-
-### 4. 区间合并
-
-这类题目会询问区间中满足条件的连续最长区间,所以PushUp的时候需要对左右儿子的区间进行合并
-
-- [POJ 3667 Hotel](http://poj.org/problem?id=3667) update:区间替换 query:询问满足条件的最左端点
-
-### 5. 扫描线
-
-这类题目需要将一些操作排序,然后从左到右用一根扫描线扫过去最典型的就是矩形面积并,周长并等题
-
-- [HDU 1542 Atlantis](http://acm.hdu.edu.cn/showproblem.php?pid=1542) update:区间增减 query:直接取根节点的值  
-- [HDU 1828 Picture](http://acm.hdu.edu.cn/showproblem.php?pid=1828) update:区间增减 query:直接取根节点的值
+Bài toán Range Sum Query tập trung vào việc truy vấn tổng các phần tử trong một đoạn. Nó có nhiều biến thể: [dữ liệu bất biến (immutable)](https://leetcode.com/problems/range-sum-query-immutable/), [dữ liệu thay đổi được (mutable)](https://leetcode.com/problems/range-sum-query-mutable/), [nhiều lần cập nhật - một lần truy vấn](https://leetcode.com/problems/range-addition/), và [nhiều lần cập nhật - nhiều lần truy vấn (2D)](https://leetcode.com/problems/range-sum-query-2d-mutable/).
 
 
-### 6. 计数问题
 
-在 LeetCode 中还有一类问题涉及到计数的。[315. Count of Smaller Numbers After Self](https://books.halfrost.com/leetcode/ChapterFour/0300~0399/0315.Count-of-Smaller-Numbers-After-Self/)，[327. Count of Range Sum](https://books.halfrost.com/leetcode/ChapterFour/0300~0399/0327.Count-of-Range-Sum/)，[493. Reverse Pairs](https://books.halfrost.com/leetcode/ChapterFour/0400~0499/0493.Reverse-Pairs/) 这类问题可以用下面的套路解决。线段树的每个节点存的是区间计数。
+### 2. Cập nhật một điểm (Point Update)
+- [HDU 1166 敌兵布阵](http://acm.hdu.edu.cn/showproblem.php?pid=1166) update: tăng/giảm tại 1 điểm (point increment/decrement) · query: tính tổng đoạn (range sum)
+- [HDU 1754 I Hate It](http://acm.hdu.edu.cn/showproblem.php?pid=1754) update: thay thế tại 1 điểm (point assignment) · query: giá trị lớn nhất/nhỏ nhất trên đoạn (range min/max)
+- [HDU 1394 Minimum Inversion Number](http://acm.hdu.edu.cn/showproblem.php?pid=1394) update: tăng/giảm tại 1 điểm (point increment/decrement) · query: tính tổng đoạn (range sum)
+- [HDU 2795 Billboard](http://acm.hdu.edu.cn/showproblem.php?pid=2795) query: tìm vị trí có giá trị lớn nhất trong đoạn (arg max) (gộp thao tác update vào query)
+
+### 3. Cập nhật đoạn (Range Update)
+
+- [HDU 1698 Just a Hook](http://acm.hdu.edu.cn/showproblem.php?pid=1698) update: thay thế theo đoạn (range assignment) (vì chỉ query 1 lần trên toàn đoạn nên có thể in luôn thông tin nốt gốc)
+- [POJ 3468 A Simple Problem with Integers](http://poj.org/problem?id=3468) update: tăng/giảm theo đoạn (range add) · query: tổng đoạn (range sum)
+- [POJ 2528 Mayor’s posters](http://poj.org/problem?id=2528) rời rạc hoá (discretization) + update: thay thế theo đoạn (range assignment) · query: hash đơn giản
+- [POJ 3225 Help with Intervals](http://poj.org/problem?id=3225) update: thay thế theo đoạn + XOR theo đoạn (range xor) · query: hash đơn giản
+
+### 4. Gộp đoạn (Interval Merge)
+
+Dạng này thường hỏi đoạn liên tiếp dài nhất thỏa điều kiện trong một khoảng; vì vậy khi “đẩy lên” (push up) cần gộp thông tin của con trái và con phải.
+
+- [POJ 3667 Hotel](http://poj.org/problem?id=3667) update: thay thế theo đoạn (range assignment) · query: hỏi điểm trái nhất thỏa điều kiện (leftmost valid position)
+
+### 5. Đường quét (Sweep Line)
+
+Nhóm này thường cần sắp xếp các sự kiện (events), rồi dùng một đường quét (sweep line) quét từ trái qua phải. Điển hình: hợp diện tích hình chữ nhật (union area), hợp chu vi (union perimeter), v.v.
+
+- [HDU 1542 Atlantis](http://acm.hdu.edu.cn/showproblem.php?pid=1542) update: tăng/giảm theo đoạn (range add) · query: lấy trực tiếp giá trị ở nốt gốc
+- [HDU 1828 Picture](http://acm.hdu.edu.cn/showproblem.php?pid=1828) update: tăng/giảm theo đoạn (range add) · query: lấy trực tiếp giá trị ở nốt gốc
+
+
+### 6. Bài toán đếm (Counting Problems)
+
+Trên LeetCode có một nhóm bài liên quan tới đếm (counting), như [315. Count of Smaller Numbers After Self](https://books.halfrost.com/leetcode/ChapterFour/0300~0399/0315.Count-of-Smaller-Numbers-After-Self/), [327. Count of Range Sum](https://books.halfrost.com/leetcode/ChapterFour/0300~0399/0327.Count-of-Range-Sum/), [493. Reverse Pairs](https://books.halfrost.com/leetcode/ChapterFour/0400~0499/0493.Reverse-Pairs/). Các bài này có thể giải theo “khuôn” sau: mỗi nốt của cây đoạn lưu **số lượng** (count) trong một đoạn giá trị.
 
 
 
 ```go
-// SegmentCountTree define
+// SegmentCountTree - cây đoạn dùng để đếm (counting segment tree)
 type SegmentCountTree struct {
 	data, tree  []int
 	left, right int
 	merge       func(i, j int) int
 }
 
-// Init define
+// Init
 func (st *SegmentCountTree) Init(nums []int, oper func(i, j int) int) {
 	st.merge = oper
 
@@ -425,7 +427,7 @@ func (st *SegmentCountTree) Init(nums []int, oper func(i, j int) int) {
 	st.data, st.tree = data, tree
 }
 
-// 在 treeIndex 的位置创建 [left....right] 区间的线段树
+// Tạo cây đoạn cho đoạn [left...right] tại vị trí treeIndex
 func (st *SegmentCountTree) buildSegmentTree(treeIndex, left, right int) {
 	if left == right {
 		st.tree[treeIndex] = st.data[left]
@@ -445,9 +447,9 @@ func (st *SegmentCountTree) rightChild(index int) int {
 	return 2*index + 2
 }
 
-// 查询 [left....right] 区间内的值
+// Truy vấn trên đoạn [left...right]
 
-// Query define
+// Query
 func (st *SegmentCountTree) Query(left, right int) int {
 	if len(st.data) > 0 {
 		return st.queryInTree(0, 0, len(st.data)-1, left, right)
@@ -455,7 +457,8 @@ func (st *SegmentCountTree) Query(left, right int) int {
 	return 0
 }
 
-// 在以 treeIndex 为根的线段树中 [left...right] 的范围里，搜索区间 [queryLeft...queryRight] 的值，值是计数值
+// Trong cây đoạn có gốc treeIndex (đang quản lý [left...right]),
+// truy vấn số lượng trong khoảng giá trị [queryLeft...queryRight]
 func (st *SegmentCountTree) queryInTree(treeIndex, left, right, queryLeft, queryRight int) int {
 	if queryRight < st.data[left] || queryLeft > st.data[right] {
 		return 0
@@ -468,16 +471,16 @@ func (st *SegmentCountTree) queryInTree(treeIndex, left, right, queryLeft, query
 		st.queryInTree(leftTreeIndex, left, midTreeIndex, queryLeft, queryRight)
 }
 
-// 更新计数
+// Cập nhật số đếm (count update)
 
-// UpdateCount define
+// UpdateCount
 func (st *SegmentCountTree) UpdateCount(val int) {
 	if len(st.data) > 0 {
 		st.updateCountInTree(0, 0, len(st.data)-1, val)
 	}
 }
 
-// 以 treeIndex 为根，更新 [left...right] 区间内的计数
+// Với gốc treeIndex, tăng count cho đoạn [left...right] mà val thuộc vào
 func (st *SegmentCountTree) updateCountInTree(treeIndex, left, right, val int) {
 	if val >= st.data[left] && val <= st.data[right] {
 		st.tree[treeIndex]++

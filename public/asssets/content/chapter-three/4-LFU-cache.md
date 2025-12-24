@@ -1,36 +1,43 @@
 ---
-title: 3.4 LFUCache
+title: 3.4 Bộ nhớ đệm LFU (LFU Cache)
 type: docs
 weight: 4
 ---
 
-# 最不经常最少使用 LFUCache
+# Bộ nhớ đệm LFU (LFU Cache)
 
 ![](https://img.halfrost.com/Blog/ArticleImage/146_1_.png)
 
-LFU 是 Least Frequently Used 的缩写，即最不经常最少使用，也是一种常用的页面置换算法，选择访问计数器最小的页面予以淘汰。如下图，缓存中每个页面带一个访问计数器。
+LFU là viết tắt của **Least Frequently Used (LFU)**, nghĩa là **ít được dùng nhất theo tần suất**. Đây cũng là một thuật toán thay thế trang (page replacement algorithm) phổ biến: ta sẽ loại bỏ trang có bộ đếm truy cập nhỏ nhất. Như hình dưới, mỗi trang trong bộ nhớ đệm đều có một bộ đếm.
 
 
 ![](https://img.halfrost.com/Blog/ArticleImage/146_3.png)
 
-根据 LFU 的策略，每访问一次都要更新访问计数器。当插入 B 的时候，发现缓存中有 B，所以增加访问计数器的计数，并把 B 移动到访问计数器从大到小排序的地方。再插入 D，同理先更新计数器，再移动到它排序以后的位置。当插入 F 的时候，缓存中不存在 F，所以淘汰计数器最小的页面的页面，所以淘汰 A 页面。此时 F 排在最下面，计数为 1。
+Theo chiến lược LFU, mỗi lần truy cập đều phải cập nhật bộ đếm.  
+Khi “chèn” (put/insert) B, ta thấy B đã có trong cache (cache hit), nên tăng bộ đếm của B và di chuyển B đến vị trí phù hợp theo thứ tự tần suất. Chèn D cũng tương tự: cập nhật bộ đếm rồi di chuyển.  
+Khi chèn F, cache chưa có F (cache miss) nên phải loại trang có bộ đếm nhỏ nhất → loại A. Lúc này F nằm ở dưới cùng với bộ đếm bằng 1.
 
 ![](https://img.halfrost.com/Blog/ArticleImage/146_8_.png)
 
-这里有一个比 LRU 特别的地方。如果淘汰的页面访问次数有多个相同的访问次数，选择最靠尾部的。如上图中，A、B、C 三者的访问次数相同，都是 1 次。要插入 F，F 不在缓存中，此时要淘汰 A 页面。F 是新插入的页面，访问次数为 1，排在 C 的前面。也就是说相同的访问次数，按照新旧顺序排列，淘汰掉最旧的页面。这一点是和 LRU 最大的不同的地方。
+LFU có một điểm “đặc biệt” so với LRU:  
+Nếu có nhiều trang có cùng số lần truy cập và cần loại bỏ, thì chọn trang **cũ nhất** trong nhóm đó (thường là trang nằm gần cuối hơn). Trong hình, A/B/C đều có tần suất 1. Khi cần chèn F (F chưa có trong cache), ta loại A. F là trang mới, tần suất 1, được xếp “trước” C. Nói cách khác: **cùng frequency thì xét thêm thứ tự cũ–mới (recency), loại trang cũ nhất**. Đây là khác biệt lớn nhất so với LRU.
 
-可以发现，**LFU 更新和插入新页面可以发生在链表中任意位置，删除页面都发生在表尾**。
+Ta có thể thấy: **với LFU, cập nhật và chèn trang mới có thể xảy ra ở bất kỳ vị trí nào trong danh sách; còn xóa/loại vẫn diễn ra ở cuối danh sách**.
 
 
-## 解法一 Get O(1) / Put O(1)
+## Cách 1: Get \(O(1)\) / Put \(O(1)\)
 
-LFU 同样要求查询尽量高效，O(1) 内查询。依旧选用 map 查询。修改和删除也需要 O(1) 完成，依旧选用双向链表，继续复用 container 包中的 list 数据结构。LFU 需要记录访问次数，所以每个结点除了存储 key，value，需要再多存储 frequency 访问次数。
+LFU cũng yêu cầu truy vấn thật nhanh, tốt nhất trong \(O(1)\). Ta tiếp tục dùng **map** để tra cứu theo key. Thao tác sửa và xóa cũng cần \(O(1)\), nên tiếp tục dùng **danh sách liên kết đôi (doubly linked list)**, và có thể tái sử dụng `container/list`.  
+Vì LFU cần lưu số lần truy cập (frequency), nên mỗi nút (node) ngoài `key` và `value` sẽ lưu thêm `frequency`.
 
-还有 1 个问题需要考虑，一个是如何按频次排序？相同频次，按照先后顺序排序。如果你开始考虑排序算法的话，思考方向就偏离最佳答案了。排序至少 O(nlogn)。重新回看 LFU 的工作原理，会发现它只关心最小频次。其他频次之间的顺序并不关心。所以不需要排序。用一个 min 变量保存最小频次，淘汰时读取这个最小值能找到要删除的结点。相同频次按照先后顺序排列，这个需求还是用双向链表实现，双向链表插入的顺序体现了结点的先后顺序。相同频次对应一个双向链表，可能有多个相同频次，所以可能有多个双向链表。用一个 map 维护访问频次和双向链表的对应关系。删除最小频次时，通过 min 找到最小频次，然后再这个 map 中找到这个频次对应的双向链表，在双向链表中找到最旧的那个结点删除。这就解决了 LFU 删除操作。
+Ta còn một vấn đề nữa: làm sao “sắp” theo frequency? Với cùng frequency thì lại phải theo thứ tự cũ–mới.  
+Nếu bắt đầu nghĩ tới thuật toán sắp xếp (sorting) thì bạn đang đi lệch hướng, vì sorting ít nhất cũng \(O(n \log n)\). Nhìn lại cơ chế LFU sẽ thấy: nó chỉ quan tâm tới **frequency nhỏ nhất** (min frequency). Thứ tự giữa các frequency khác nhau không cần “sắp” toàn cục.  
+Vì vậy, ta dùng một biến `min` để lưu **tần suất nhỏ nhất (min frequency)**. Khi cần loại bỏ, chỉ cần nhìn `min` là biết nhóm cần xoá.  
+Với các phần tử cùng frequency, ta dùng danh sách liên kết đôi để giữ thứ tự cũ–mới: thứ tự chèn trong list chính là thứ tự thời gian. Mỗi frequency tương ứng một danh sách; vì có thể có nhiều frequency nên sẽ có nhiều danh sách. Ta dùng một map để ánh xạ `frequency -> list`. Khi xóa theo `min`, ta lấy đúng list tương ứng và xóa phần tử “cũ nhất” ở cuối list. Như vậy giải quyết được thao tác xóa của LFU.
 
-LFU 的更新操作和 LRU 类似，也需要用一个 map 保存 key 和双向链表结点的映射关系。这个双向链表结点中存储的是 key-value-frequency 三个元素的元组。这样通过结点中的 key 和 frequency 可以反过来删除 map 中的 key。
+Phần cập nhật của LFU cũng giống LRU ở chỗ: cần một map nữa để ánh xạ `key -> node`. Node trong list sẽ lưu bộ ba `key-value-frequency`. Khi cần xóa, ta dùng `key` trong node để xóa ngược lại khỏi map.
 
-定义 LFUCache 的数据结构如下：
+Định nghĩa cấu trúc dữ liệu cho `LFUCache`:
 
 ```go
 
@@ -59,7 +66,13 @@ func Constructor(capacity int) LFUCache {
 
 ```
 
-LFUCache 的 Get 操作涉及更新 frequency 值和 2 个 map。在 nodes map 中通过 key 获取到结点信息。在 lists 删除结点当前 frequency 结点。删完以后 frequency ++。新的 frequency 如果在 lists 中存在，添加到双向链表表首，如果不存在，需要新建一个双向链表并把当前结点加到表首。再更新双向链表结点作为 value 的 map。最后更新 min 值，判断老的 frequency 对应的双向链表中是否已经为空，如果空了，min++。
+Hàm `Get` của LFU sẽ cập nhật `frequency` và đụng tới 2 map:
+- Từ `nodes` map, lấy node theo `key`.
+- Từ `lists`, xóa node khỏi danh sách của `frequency` hiện tại.
+- Tăng `frequency++`.
+- Đưa node sang danh sách của `frequency` mới: nếu list chưa tồn tại thì tạo mới.
+- Cập nhật lại `nodes[key]` trỏ tới phần tử mới trong list.
+- Cuối cùng cập nhật `min`: nếu list ở `frequency` cũ (đặc biệt khi nó bằng `min`) bị rỗng thì `min++`.
 
 ```go
 func (this *LFUCache) Get(key int) int {
@@ -84,9 +97,11 @@ func (this *LFUCache) Get(key int) int {
 
 ```
 
-LFU 的 Put 操作逻辑稍微多一点。先在 nodes map 中查询 key 是否存在，如果存在，获取这个结点，更新它的 value 值，然后手动调用一次 Get 操作，因为下面的更新逻辑和 Get 操作一致。如果 map 中不存在，接下来进行插入或者删除操作。判断 capacity 是否装满，如果装满，执行删除操作。在 min 对应的双向链表中删除表尾的结点，对应的也要删除 nodes map 中的键值。
+`Put` có nhiều nhánh hơn một chút:
+- Nếu key đã tồn tại trong `nodes`: cập nhật `value`, rồi gọi `Get(key)` để dùng lại logic cập nhật `frequency`.
+- Nếu key chưa tồn tại: cần chèn mới, nhưng trước đó phải kiểm tra dung lượng (capacity). Nếu cache đã đầy, thực hiện evict: lấy list ứng với `min` và xóa phần tử ở cuối (oldest) trong list đó; đồng thời xóa `key` khỏi `nodes`.
 
-由于新插入的页面访问次数一定为 1，所以 min 此时置为 1。新建结点，插入到 2 个 map 中。
+Vì phần tử mới chèn vào có `frequency = 1`, nên đặt `min = 1`. Tạo node mới và chèn vào cả 2 map.
 
 ```go
 
@@ -94,21 +109,22 @@ func (this *LFUCache) Put(key int, value int) {
 	if this.capacity == 0 {
 		return
 	}
-	// 如果存在，更新访问次数
+	// Nếu đã tồn tại thì cập nhật số lần truy cập	
 	if currentValue, ok := this.nodes[key]; ok {
 		currentNode := currentValue.Value.(*node)
 		currentNode.value = value
 		this.Get(key)
 		return
 	}
-	// 如果不存在且缓存满了，需要删除
+	// Nếu chưa tồn tại và cache đã đầy thì cần xóa bớt
 	if this.capacity == len(this.nodes) {
 		currentList := this.lists[this.min]
 		backNode := currentList.Back()
 		delete(this.nodes, backNode.Value.(*node).key)
 		currentList.Remove(backNode)
 	}
-	// 新建结点，插入到 2 个 map 中
+	
+	// Tạo node mới, chèn vào 2 map
 	this.min = 1
 	currentNode := &node{
 		key:       key,
@@ -125,21 +141,24 @@ func (this *LFUCache) Put(key int, value int) {
 
 ```
 
-总结，LFU 是由两个 map 和一个 min 指针组成的数据结构。一个 map 中 key 存的是访问次数，对应的 value 是一个个的双向链表，此处双向链表的作用是在相同频次的情况下，淘汰表尾最旧的那个页面。另一个 map 中 key 对应的 value 是双向链表的结点，结点中比 LRU 多存储了一个访问次数的值，即结点中存储 key-value-frequency 的元组。此处双向链表的作用和 LRU 是类似的，可以根据 map 中的 key 更新双向链表结点中的 value 和 frequency 的值，也可以根据双向链表结点中的 key 和 frequency 反向更新 map 中的对应关系。如下图：
+Tóm lại, LFU là một cấu trúc gồm **2 map** và một biến `min`:
+- Một map ánh xạ `frequency -> doubly linked list`: dùng để giữ thứ tự cũ–mới trong cùng frequency, nhằm xóa phần tử “cũ nhất” ở cuối list.
+- Một map ánh xạ `key -> node`: node lưu `key-value-frequency` (so với LRU thì thêm `frequency`).
+Danh sách liên kết đôi ở đây đóng vai trò tương tự LRU: dựa vào key để cập nhật node, và dựa vào key/frequency trong node để cập nhật ngược lại các map. Minh hoạ:
 
 ![](https://img.halfrost.com/Blog/ArticleImage/146_10_0.png)
 
-提交代码以后，成功通过所有测试用例。
+Sau khi submit, code đã qua toàn bộ test.
 
 
 ![](https://img.halfrost.com/Blog/ArticleImage/146_5.png)
 
 
-## 解法二 Get O(capacity) / Put O(capacity)
+## Cách 2: Get \(O(capacity)\) / Put \(O(capacity)\)
 
-LFU 的另外一个思路是利用 [Index Priority Queue](https://algs4.cs.princeton.edu/24pq/) 这个数据结构。别被名字吓到，Index Priority Queue = map + Priority Queue，仅此而已。
+Một hướng khác cho LFU là dùng [Index Priority Queue](https://algs4.cs.princeton.edu/24pq/). Đừng bị cái tên làm “hù”: Index Priority Queue = **map + hàng đợi ưu tiên (Priority Queue)**, chỉ vậy thôi.
 
-利用 Priority Queue 维护一个最小堆，堆顶是访问次数最小的元素。map 中的 value 存储的是优先队列中结点。
+Dùng Priority Queue để duy trì một **min-heap (minimum heap)**, trong đó phần tử ở đỉnh heap (heap top) là phần tử có `frequency` nhỏ nhất. `map` sẽ lưu con trỏ tới node trong hàng đợi ưu tiên.
 
 ```go
 import "container/heap"
@@ -162,31 +181,34 @@ func Constructor(capacity int) LFUCache {
 
 ```
 
-Get 和 Put 操作要尽量的快，有 2 个问题需要解决。当访问次数相同时，如何删除掉最久的元素？当元素的访问次数发生变化时，如何快速调整堆？为了解决这 2 个问题，定义如下的数据结构：
+Để Get/Put nhanh, có 2 vấn đề cần giải:
+- Khi `frequency` bằng nhau, làm sao loại phần tử “cũ nhất” (oldest)?
+- Khi `frequency` thay đổi, làm sao điều chỉnh heap nhanh?
+Để giải quyết, ta định nghĩa cấu trúc sau:
 
 ```go
-// An Item is something we manage in a priority queue.
+// Item - phần tử được quản lý trong hàng đợi ưu tiên (priority queue)
 type Item struct {
-	value     int // The value of the item; arbitrary.
+	value     int // giá trị (value) của item
 	key       int
-	frequency int // The priority of the item in the queue.
-	count     int // use for evicting the oldest element
-	// The index is needed by update and is maintained by the heap.Interface methods.
-	index int // The index of the item in the heap.
+	frequency int // độ ưu tiên (priority) trong queue: frequency nhỏ hơn sẽ ưu tiên bị pop
+	count     int // dùng để loại phần tử cũ nhất (evicting the oldest element)
+	// index cần cho việc update (heap.Fix) và được duy trì bởi heap.Interface
+	index int // vị trí (index) của item trong heap
 }
 
 ```
 
-堆中的结点存储这 5 个值。count 值用来决定哪个是最老的元素，类似一个操作时间戳。index 值用来 re-heapify 调整堆的。接下来实现 PriorityQueue 的方法。
+Node trong heap lưu 5 giá trị. `count` dùng để xác định phần tử nào “cũ nhất”, giống như một dấu thời gian (timestamp). `index` dùng để re-heapify (điều chỉnh heap) khi cập nhật. Tiếp theo là các hàm của `PriorityQueue`:
 
 ```go
-// A PriorityQueue implements heap.Interface and holds Items.
+// PriorityQueue triển khai heap.Interface và chứa các Item
 type PriorityQueue []*Item
 
 func (pq PriorityQueue) Len() int { return len(pq) }
 
 func (pq PriorityQueue) Less(i, j int) bool {
-	// We want Pop to give us the highest, not lowest, priority so we use greater than here.
+	// Ưu tiên theo frequency nhỏ hơn; nếu bằng nhau thì ưu tiên theo count nhỏ hơn (cũ hơn)
 	if pq[i].frequency == pq[j].frequency {
 		return pq[i].count < pq[j].count
 	}
@@ -216,7 +238,7 @@ func (pq *PriorityQueue) Pop() interface{} {
 	return item
 }
 
-// update modifies the priority and value of an Item in the queue.
+// update - cập nhật value/priority của Item rồi gọi heap.Fix để điều chỉnh heap
 func (pq *PriorityQueue) update(item *Item, value int, frequency int, count int) {
 	item.value = value
 	item.count = count
@@ -225,11 +247,12 @@ func (pq *PriorityQueue) update(item *Item, value int, frequency int, count int)
 }
 ```
 
-在 Less() 方法中，frequency 从小到大排序，frequency 相同的，按 count 从小到大排序。按照优先队列建堆规则，可以得到，frequency 最小的在堆顶，相同的 frequency，count 最小的越靠近堆顶。
+Trong `Less()`, `frequency` được so theo tăng dần; nếu `frequency` bằng nhau thì so `count` tăng dần. Vì vậy phần tử có `frequency` nhỏ nhất sẽ ở đỉnh heap; nếu `frequency` bằng nhau thì phần tử có `count` nhỏ nhất (cũ nhất) gần đỉnh hơn.
 
-在 Swap() 方法中，记得要更新 index 值。在 Push() 方法中，插入时队列的长度即是该元素的 index 值，此处也要记得更新 index 值。update() 方法调用 Fix() 函数。Fix() 函数比先 Remove() 再 Push() 一个新的值，花销要小。所以此处调用 Fix() 函数，这个操作的时间复杂度是 O(log n)。
+Trong `Swap()`, nhớ cập nhật `index`. Trong `Push()`, `index` của phần tử mới chính là độ dài queue trước khi append.  
+`update()` gọi `heap.Fix()`. `Fix()` rẻ hơn so với `Remove()` rồi `Push()` lại một item mới, nên thường được ưu tiên. Thao tác này có độ phức tạp \(O(\log n)\).
 
-这样就维护了最小 Index Priority Queue。Get 操作非常简单：
+Như vậy ta đã duy trì được một Index Priority Queue tối thiểu. Hàm `Get` rất đơn giản:
 
 ```go
 func (this *LFUCache) Get(key int) int {
@@ -246,7 +269,7 @@ func (this *LFUCache) Get(key int) int {
 
 ```
 
-在 hashmap 中查询 key，如果存在，counter 时间戳累加，调用 Priority Queue 的 update 方法，调整堆。
+Tra `key` trong hash map. Nếu tồn tại: tăng `counter` (dấu thời gian), rồi gọi `update()` để tăng `frequency` và điều chỉnh heap.
 
 ```go
 func (this *LFUCache) Put(key int, value int) {
@@ -254,17 +277,17 @@ func (this *LFUCache) Put(key int, value int) {
 		return
 	}
 	this.counter++
-	// 如果存在，增加 frequency，再调整堆
+	// Nếu đã tồn tại: tăng frequency rồi điều chỉnh heap
 	if item, ok := this.hash[key]; ok {
 		this.pq.update(item, value, item.frequency+1, this.counter)
 		return
 	}
-	// 如果不存在且缓存满了，需要删除。在 hashmap 和 pq 中删除。
+	// Nếu chưa tồn tại và cache đã đầy: xóa trong cả hash map và pq
 	if len(this.pq) == this.capacity {
 		item := heap.Pop(&this.pq).(*Item)
 		delete(this.hash, item.key)
 	}
-	// 新建结点，在 hashmap 和 pq 中添加。
+	// Tạo item mới, thêm vào hash map và pq
 	item := &Item{
 		value: value,
 		key:   key,
@@ -276,12 +299,12 @@ func (this *LFUCache) Put(key int, value int) {
 ```
 
 
-用最小堆实现的 LFU，Put 时间复杂度是 O(capacity)，Get 时间复杂度是 O(capacity)，不及 2 个 map 实现的版本。巧的是最小堆的版本居然打败了 100%。
+Với cách dùng min-heap, phần tác giả ghi rằng Put có độ phức tạp \(O(capacity)\), Get cũng \(O(capacity)\), kém hơn bản dùng 2 map. Nhưng khá thú vị là phiên bản min-heap lại “beats 100%”.
 
 ![](https://img.halfrost.com/Blog/ArticleImage/146_7.png)
 
 
-## 模板
+## Mẫu code (Template)
 
 
 ```go

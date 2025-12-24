@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -13,7 +13,7 @@ import 'katex/dist/katex.min.css';
 
 interface MarkdownContentProps {
   content: string;
-  title?: string; // Optional title to remove from content if it appears as first h1
+  title?: string;
 }
 
 interface ContentPart {
@@ -30,13 +30,39 @@ function sanitizeKatexInput(input: string) {
   return input.replace(/\u00A0/g, ' ');
 }
 
-// Helper function to process text and replace inline katex shortcodes
+// Global counter for generating unique keys
+let katexKeyCounter = 0;
+
+// Helper function to generate unique key for katex
+function generateKatexKey(): string {
+  return `katex-inline-${Date.now()}-${++katexKeyCounter}-${Math.random().toString(36).substr(2, 9)}`;
+}
+
+// Wrapper component for InlineMath that stores original LaTeX source
+function InlineMathWithData({ math }: { math: string }) {
+  return (
+    <span data-katex-source={math} className="inline-block">
+      <InlineMath math={math} />
+    </span>
+  );
+}
+
+// Wrapper component for BlockMath that stores original LaTeX source
+function BlockMathWithData({ math }: { math: string }) {
+  return (
+    <div data-katex-source={math} className="my-4 sm:my-6">
+      <BlockMath math={math} />
+    </div>
+  );
+}
+
+// Helper function to process text and replace inline katex (now using $ delimiters)
 function processTextWithInlineKatex(text: string): React.ReactNode[] {
-  const inlineKatexRegex = /\{\{<\s*katex\s*>\}\}([\s\S]*?)\{\{<\s*\/katex\s*>\}\}/g;
+  // Match $...$ for inline math, but not $$...$$ (which is block math)
+  const inlineKatexRegex = /(?<!\$)\$(?!\$)((?:[^\$]|\\\$)+?)\$(?!\$)/g;
   const parts: React.ReactNode[] = [];
   let lastIndex = 0;
   let match;
-  let keyIndex = 0;
   
   while ((match = inlineKatexRegex.exec(text)) !== null) {
     // Add text before katex
@@ -47,9 +73,9 @@ function processTextWithInlineKatex(text: string): React.ReactNode[] {
       }
     }
     
-    // Add katex component
+    // Add katex component with unique key and data attribute
     const katexContent = sanitizeKatexInput(match[1].trim());
-    parts.push(<InlineMath key={`katex-inline-${keyIndex++}`} math={katexContent} />);
+    parts.push(<InlineMathWithData key={generateKatexKey()} math={katexContent} />);
     
     lastIndex = match.index + match[0].length;
   }
@@ -94,11 +120,39 @@ function preprocessContent(content: string): ContentPart[] {
     }
   );
 
+  // First, handle LaTeX \(...\) and \[...\] that may contain Hugo shortcodes
+  // Extract Hugo shortcodes from within LaTeX delimiters and handle separately
+  content = content.replace(
+    /\\\(([\s\S]*?)\\\)/g,
+    (_match, math) => {
+      // If there are Hugo shortcodes inside, extract the math content only
+      const cleanMath = math.replace(/\{\{<\s*katex\s*>\}\}([\s\S]*?)\{\{<\s*\/katex\s*>\}\}/g, '$1');
+      return `$${sanitizeKatexInput(cleanMath.trim())}$`;
+    }
+  );
+  
+  content = content.replace(
+    /\\\[([\s\S]*?)\\\]/g,
+    (_match, math) => {
+      // If there are Hugo shortcodes inside, extract the math content only
+      const cleanMath = math.replace(/\{\{<\s*katex\s*>\}\}([\s\S]*?)\{\{<\s*\/katex\s*>\}\}/g, '$1');
+      return `{{< katex display >}}${sanitizeKatexInput(cleanMath.trim())}{{< /katex >}}`;
+    }
+  );
+  
+  // Then convert remaining Hugo shortcode {{< katex >}}...{{< /katex >}} to $...$
+  content = content.replace(
+    /\{\{<\s*katex\s*>\}\}([\s\S]*?)\{\{<\s*\/katex\s*>\}\}/g,
+    (_match, math) => {
+      return `$${sanitizeKatexInput(math.trim())}$`;
+    }
+  );
+
   const parts: ContentPart[] = [];
   let lastIndex = 0;
   
-  // Combined regex to match both columns and katex shortcodes (both inline and display)
-  // Note: This regex matches display katex and columns, inline katex will be handled in markdown rendering
+  // Combined regex to match both columns and katex display shortcodes
+  // Inline katex has already been converted to $ syntax above
   const shortcodeRegex = /\{\{<\s*(columns|katex\s+display)\s*>\}\}([\s\S]*?)\{\{<\s*\/(?:columns|katex)\s*>\}\}/g;
   
   let match;
@@ -135,9 +189,10 @@ function preprocessContent(content: string): ContentPart[] {
   // Add remaining markdown
   if (lastIndex < content.length) {
     let remaining = content.slice(lastIndex);
-    // Remove other Hugo shortcodes that weren't matched (but keep inline katex for processing)
-    remaining = remaining.replace(/\{\{<\s*(?!katex\s*>)[^>]+\s*>\}\}/g, '');
-    remaining = remaining.replace(/\{\{<\s*\/(?!katex\s*>)[^>]+\s*>\}\}/g, '');
+    // Remove other Hugo shortcodes that weren't matched
+    // Note: inline katex has already been converted to $ syntax above
+    remaining = remaining.replace(/\{\{<\s*[^>]+\s*>\}\}/g, '');
+    remaining = remaining.replace(/\{\{<\s*\/[^>]+\s*>\}\}/g, '');
     if (remaining.trim()) {
       parts.push({ type: 'markdown', content: remaining });
     }
@@ -146,8 +201,8 @@ function preprocessContent(content: string): ContentPart[] {
   // If no shortcodes found, return entire content as markdown
   if (parts.length === 0) {
     let processed = content;
-    processed = processed.replace(/\{\{<\s*(?!katex\s*>)[^>]+\s*>\}\}/g, '');
-    processed = processed.replace(/\{\{<\s*\/(?!katex\s*>)[^>]+\s*>\}\}/g, '');
+    processed = processed.replace(/\{\{<\s*[^>]+\s*>\}\}/g, '');
+    processed = processed.replace(/\{\{<\s*\/[^>]+\s*>\}\}/g, '');
     return [{ type: 'markdown', content: processed }];
   }
   
@@ -205,6 +260,52 @@ export function MarkdownContent({ content, title }: MarkdownContentProps) {
   );
   
   const parts = preprocessContent(processedContent);
+
+  // Handle copy event to replace katex rendered content with LaTeX source
+  useEffect(() => {
+    const handleCopy = (e: ClipboardEvent) => {
+      const selection = window.getSelection();
+      if (!selection || selection.rangeCount === 0) return;
+
+      // Get the selected content
+      const range = selection.getRangeAt(0);
+      const container = range.cloneContents();
+
+      // Find all katex elements and replace with source
+      const katexElements = container.querySelectorAll('[data-katex-source]');
+      katexElements.forEach((el) => {
+        const source = el.getAttribute('data-katex-source');
+        if (source) {
+          const textNode = document.createTextNode(source);
+          el.parentNode?.replaceChild(textNode, el);
+        }
+      });
+
+      // Get the text content with LaTeX sources
+      let textContent = '';
+      const walker = document.createTreeWalker(
+        container,
+        NodeFilter.SHOW_TEXT,
+        null
+      );
+      
+      let node;
+      while ((node = walker.nextNode())) {
+        textContent += node.textContent;
+      }
+
+      // Set the clipboard data
+      if (textContent) {
+        e.preventDefault();
+        e.clipboardData?.setData('text/plain', textContent);
+      }
+    };
+
+    document.addEventListener('copy', handleCopy);
+    return () => {
+      document.removeEventListener('copy', handleCopy);
+    };
+  }, []);
   
   return (
     <div className="prose prose-slate dark:prose-invert max-w-none w-full min-w-0
@@ -227,14 +328,11 @@ export function MarkdownContent({ content, title }: MarkdownContentProps) {
           return <MarkdownColumns key={index} columns={part.columns!} />;
         }
         if (part.type === 'katex') {
-          return (
-            <div key={index} className={part.display ? 'my-4 sm:my-6' : 'inline'}>
-              {part.display ? (
-                <BlockMath math={sanitizeKatexInput(part.katexContent!)} />
-              ) : (
-                <InlineMath math={sanitizeKatexInput(part.katexContent!)} />
-              )}
-            </div>
+          const sanitizedMath = sanitizeKatexInput(part.katexContent!);
+          return part.display ? (
+            <BlockMathWithData key={index} math={sanitizedMath} />
+          ) : (
+            <InlineMathWithData key={index} math={sanitizedMath} />
           );
         }
         return (
@@ -342,6 +440,28 @@ export function MarkdownContent({ content, title }: MarkdownContentProps) {
             );
           },
           th({ children }: any) {
+            // Process inline katex in table headers
+            if (typeof children === 'string') {
+              const processed = processTextWithInlineKatex(children);
+              return (
+                <th className="px-3 sm:px-4 md:px-6 py-2 sm:py-3 text-left text-xs font-semibold text-zinc-700 dark:text-zinc-200 uppercase tracking-wider border-b border-zinc-200 dark:border-border whitespace-nowrap">
+                  {processed}
+                </th>
+              );
+            }
+            if (Array.isArray(children)) {
+              const processed = children.map((child, idx) => {
+                if (typeof child === 'string') {
+                  return processTextWithInlineKatex(child);
+                }
+                return child;
+              }).flat();
+              return (
+                <th className="px-3 sm:px-4 md:px-6 py-2 sm:py-3 text-left text-xs font-semibold text-zinc-700 dark:text-zinc-200 uppercase tracking-wider border-b border-zinc-200 dark:border-border whitespace-nowrap">
+                  {processed}
+                </th>
+              );
+            }
             return (
               <th className="px-3 sm:px-4 md:px-6 py-2 sm:py-3 text-left text-xs font-semibold text-zinc-700 dark:text-zinc-200 uppercase tracking-wider border-b border-zinc-200 dark:border-border whitespace-nowrap">
                 {children}
@@ -356,6 +476,28 @@ export function MarkdownContent({ content, title }: MarkdownContentProps) {
             );
           },
           td({ children }: any) {
+            // Process inline katex in table cells
+            if (typeof children === 'string') {
+              const processed = processTextWithInlineKatex(children);
+              return (
+                <td className="px-3 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4 text-xs sm:text-sm text-zinc-700 dark:text-zinc-200">
+                  {processed}
+                </td>
+              );
+            }
+            if (Array.isArray(children)) {
+              const processed = children.map((child, idx) => {
+                if (typeof child === 'string') {
+                  return processTextWithInlineKatex(child);
+                }
+                return child;
+              }).flat();
+              return (
+                <td className="px-3 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4 text-xs sm:text-sm text-zinc-700 dark:text-zinc-200">
+                  {processed}
+                </td>
+              );
+            }
             return (
               <td className="px-3 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4 text-xs sm:text-sm text-zinc-700 dark:text-zinc-200">
                 {children}
