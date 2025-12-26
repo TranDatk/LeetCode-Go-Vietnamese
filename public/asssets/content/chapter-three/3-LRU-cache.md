@@ -6,11 +6,11 @@ weight: 3
 
 # Bộ nhớ đệm LRU (LRU Cache)
 
-![](https://img.halfrost.com/Blog/ArticleImage/146_1_.png)
+![](/images/chuong-3/3.3.1.png)
 
 LRU là viết tắt của **Least Recently Used (LRU)**, nghĩa là **ít được dùng gần đây nhất**. Đây là một thuật toán thay thế trang (page replacement algorithm) rất phổ biến: khi bộ nhớ đệm đầy, ta sẽ loại bỏ mục đã lâu không được dùng nhất. Như hình trên, khi cần chèn trang F thì phải loại bớt một trang cũ.
 
-![](https://img.halfrost.com/Blog/ArticleImage/146_2_0.png)
+![](/images/chuong-3/3.3.2.png)
 
 Theo chiến lược LRU, mỗi lần luôn loại trang ít được dùng gần đây nhất, nên đầu tiên ta loại A. Khi chèn C, ta thấy C đã có trong cache (cache hit), lúc này cần đưa C lên đầu vì nó vừa được dùng. Tương tự:
 - Chèn G: G là trang mới (cache miss) → loại B.
@@ -118,11 +118,11 @@ Tóm lại, LRU được ghép từ **map** và **danh sách liên kết đôi**
 - Đầu danh sách (front): cập nhật/đánh dấu vừa dùng (most recently used).
 - Cuối danh sách (back): loại bỏ (least recently used).
 
-![](https://img.halfrost.com/Blog/ArticleImage/146_9.png)
+![](/images/chuong-3/3.3.3.png)
 
 Sau khi submit, code đã qua toàn bộ test.
 
-![](https://img.halfrost.com/Blog/ArticleImage/146_4_.png)
+![](/images/chuong-3/3.3.4.png)
 
 
 ## Cách 2: Get \(O(1)\) / Put \(O(1)\)
@@ -208,7 +208,7 @@ func (this *LRUCache) Remove(node *Node) {
 
 Submit xong thì đúng là lên 100% thật.
 
-![](https://img.halfrost.com/Blog/ArticleImage/146_6.png)
+![](/images/chuong-3/3.3.5.png)
 
 Thực ra về bản chất thuật toán không đổi, chỉ là thay cách viết và tránh `container/list` (giảm overhead).
 

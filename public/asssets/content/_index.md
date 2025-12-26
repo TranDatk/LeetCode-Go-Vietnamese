@@ -1,3 +1,5 @@
+<img src='/images/viethoa.png'>
+
 # Thông báo Việt hóa nội dung
 
 Toàn bộ nội dung trong repository này là **bản Việt hóa** được thực hiện bởi tôi, dựa trên dự án gốc:

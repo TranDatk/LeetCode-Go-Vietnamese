@@ -1,21 +1,21 @@
 ---
-title: 第四章 LeetCode 题解
+title: Chương 4 - Lời giải LeetCode
 type: docs
 weight: 4
 ---
 
-# 第四章 LeetCode 题解
+# Chương 4 - Lời giải LeetCode
 
 <p align='center'>
-<img src='https://img.halfrost.com/Leetcode/GOPHERCON_.png'>
+<img src='/images/chuong-4/index.png'>
 </p>
 
 
-这一章就是 LeetCode 的题解了。笔者目前只刷到 608 题，题解这里有 520 题，都已经 runtime beats 100% 了。相差的 88 题是还没有 beats 100% 的，笔者还需要继续优化~
+Chương này là phần lời giải cho LeetCode. Hiện tại tác giả mới cày tới bài số 608; trong mục này đã có 520 bài có lời giải, đa số đều đạt runtime beats 100%. 88 bài còn lại là những bài vẫn chưa beats 100%, tác giả sẽ tiếp tục tối ưu thêm.
 
-题解慢慢更新中，欢迎大家提出更好的解法。点击页面下方的 edit，会跳转到 github 对应的页面 markdown 中，可以提交你的最优解 PR。
+Lời giải sẽ được cập nhật dần. Nếu bạn có cách làm hay hơn, rất hoan nghênh đóng góp. Bấm nút *edit* ở cuối trang sẽ mở đúng file markdown trên GitHub; bạn có thể gửi PR cho lời giải tối ưu của mình.
 
-让我们在题解的太空遨游吧~
+Cùng bay một vòng trong vũ trụ lời giải nhé~
 
 
 ----------------------------------------------

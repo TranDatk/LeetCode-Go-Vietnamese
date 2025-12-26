@@ -16,7 +16,7 @@ và hỗ trợ cập nhật động (dynamic update) tại một điểm (point 
 ## I. Khái niệm cây Fenwick 1D (1D BIT)
 
 
-![](https://img.halfrost.com/Blog/ArticleImage/152_0.png)
+![](/images/chuong-3/3.5.1.png)
 
 Cái tên “cây” + “mảng” có thể gây hiểu nhầm, nhưng về mặt lưu trữ vật lý (physical representation), BIT vẫn chỉ là **một mảng**. Điểm quan trọng là: ý nghĩa của mỗi phần tử trong mảng thể hiện quan hệ dạng cây như hình.  
 Trong BIT, quan hệ chỉ số cha–con thỏa:
@@ -395,11 +395,11 @@ int main()
 Đến đây có thể bạn sẽ thắc mắc: dạng này chẳng phải giống “tăng/giảm đoạn + truy vấn điểm” ở mục (2) sao? Có thể áp dụng ý tưởng tương tự, nhưng rắc rối nằm ở chỗ: sau khi chồng nhiều đoạn, cập nhật tại mỗi điểm không còn là “delta” đơn giản, mà ta phải tự duy trì một cực trị (max).  
 Ví dụ, đoạn \([5,7]\) đang có giá trị 7, rồi đoạn \([1,9]\) tăng thêm 2. Cách đúng là: \([1,4]\) tăng 2, \([8,9]\) tăng 2, còn \([5,7]\) giữ nguyên vì \(7 > 2\). Đó mới chỉ là chồng 2 đoạn; chồng càng nhiều đoạn thì việc “tách đoạn” càng phức tạp. Lúc này nhiều người sẽ nghĩ tới segment tree — đúng là rất mạnh cho dạng này — nhưng ở đây chỉ bàn về BIT.
 
-![](https://img.halfrost.com/Leetcode/leetcode_218_0.png)
+![](/images/chuong-3/3.5.2.png)
 
 Tại thời điểm tác giả viết, LeetCode có 1836 bài và tag Binary Indexed Tree chỉ có 7 bài; trong đó [218. The Skyline Problem](https://leetcode.com/problems/the-skyline-problem/) được xem là “khó” nhất. Bài skyline thuộc dạng **chồng đoạn + cực trị theo điểm**. Tác giả dùng bài này để minh hoạ cách làm thường gặp.
 
-![](https://img.halfrost.com/Leetcode/leetcode_218_1.png)
+![](/images/chuong-3/3.5.3.png)
 
 Bài toán skyline thực chất là tìm “đường bao” của các đoạn chồng nhau, nói nôm na là duy trì cực trị (max) trên từng đoạn. Có 2 vấn đề chính:
 
@@ -591,7 +591,7 @@ Bài này giống bài nghịch thế cơ bản nhưng có thêm ràng buộc th
 
 > Cũng có thể sắp xếp truy vấn theo đầu trái (left endpoint) giảm dần. Nếu làm vậy, phần xây BIT bên dưới phải chèn theo thứ tự ngược, và khi đếm sẽ tìm các cặp “chỉ số lớn hơn nhưng giá trị nhỏ hơn”. Cả hai cách đều làm được; ở đây chọn một cách để giải thích.
 
-![](https://img.halfrost.com/Blog/ArticleImage/152_1_0.png)
+![](/images/chuong-3/3.5.4.png)
 
 Khoảng bao phủ tổng thể quyết định phạm vi các phần tử cần đưa vào BIT. Như hình, nếu các truy vấn chỉ nằm trong \([1,12]\) thì các phần tử ở chỉ số 0, 13, 14 không cần quan tâm và cũng không cần chèn vào BIT.
 
@@ -670,9 +670,9 @@ func (bit2 *BinaryIndexedTree2D) Query(i, j int) int {
 
 Nếu BIT 1D duy trì thống kê trên trục số,
 
-![](https://img.halfrost.com/Blog/ArticleImage/152_2.png)
+![](/images/chuong-3/3.5.5.png)
 
 
 thì BIT 2D duy trì thống kê trong hệ tọa độ 2 chiều. Cả trục X và Y đều tuân theo tính chất của BIT 1D.
 
-![](https://img.halfrost.com/Blog/ArticleImage/152_3.png)
+![](/images/chuong-3/3.5.6.png)

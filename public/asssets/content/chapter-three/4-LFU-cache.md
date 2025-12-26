@@ -6,18 +6,18 @@ weight: 4
 
 # Bộ nhớ đệm LFU (LFU Cache)
 
-![](https://img.halfrost.com/Blog/ArticleImage/146_1_.png)
+![](/images/chuong-3/3.4.1.png)
 
 LFU là viết tắt của **Least Frequently Used (LFU)**, nghĩa là **ít được dùng nhất theo tần suất**. Đây cũng là một thuật toán thay thế trang (page replacement algorithm) phổ biến: ta sẽ loại bỏ trang có bộ đếm truy cập nhỏ nhất. Như hình dưới, mỗi trang trong bộ nhớ đệm đều có một bộ đếm.
 
 
-![](https://img.halfrost.com/Blog/ArticleImage/146_3.png)
+![](/images/chuong-3/3.4.2.png)
 
 Theo chiến lược LFU, mỗi lần truy cập đều phải cập nhật bộ đếm.  
 Khi “chèn” (put/insert) B, ta thấy B đã có trong cache (cache hit), nên tăng bộ đếm của B và di chuyển B đến vị trí phù hợp theo thứ tự tần suất. Chèn D cũng tương tự: cập nhật bộ đếm rồi di chuyển.  
 Khi chèn F, cache chưa có F (cache miss) nên phải loại trang có bộ đếm nhỏ nhất → loại A. Lúc này F nằm ở dưới cùng với bộ đếm bằng 1.
 
-![](https://img.halfrost.com/Blog/ArticleImage/146_8_.png)
+![](/images/chuong-3/3.4.3.png)
 
 LFU có một điểm “đặc biệt” so với LRU:  
 Nếu có nhiều trang có cùng số lần truy cập và cần loại bỏ, thì chọn trang **cũ nhất** trong nhóm đó (thường là trang nằm gần cuối hơn). Trong hình, A/B/C đều có tần suất 1. Khi cần chèn F (F chưa có trong cache), ta loại A. F là trang mới, tần suất 1, được xếp “trước” C. Nói cách khác: **cùng frequency thì xét thêm thứ tự cũ–mới (recency), loại trang cũ nhất**. Đây là khác biệt lớn nhất so với LRU.
@@ -146,12 +146,12 @@ Tóm lại, LFU là một cấu trúc gồm **2 map** và một biến `min`:
 - Một map ánh xạ `key -> node`: node lưu `key-value-frequency` (so với LRU thì thêm `frequency`).
 Danh sách liên kết đôi ở đây đóng vai trò tương tự LRU: dựa vào key để cập nhật node, và dựa vào key/frequency trong node để cập nhật ngược lại các map. Minh hoạ:
 
-![](https://img.halfrost.com/Blog/ArticleImage/146_10_0.png)
+![](/images/chuong-3/3.4.4.png)
 
 Sau khi submit, code đã qua toàn bộ test.
 
 
-![](https://img.halfrost.com/Blog/ArticleImage/146_5.png)
+![](/images/chuong-3/3.4.5.png)
 
 
 ## Cách 2: Get \(O(capacity)\) / Put \(O(capacity)\)
@@ -301,7 +301,7 @@ func (this *LFUCache) Put(key int, value int) {
 
 Với cách dùng min-heap, phần tác giả ghi rằng Put có độ phức tạp \(O(capacity)\), Get cũng \(O(capacity)\), kém hơn bản dùng 2 map. Nhưng khá thú vị là phiên bản min-heap lại “beats 100%”.
 
-![](https://img.halfrost.com/Blog/ArticleImage/146_7.png)
+![](/images/chuong-3/3.4.6.png)
 
 
 ## Mẫu code (Template)

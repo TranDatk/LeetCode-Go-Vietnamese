@@ -14,7 +14,7 @@ Với một cây đoạn lưu trữ {{< katex >}}n {{< /katex >}} đoạn, độ
 
 Lấy ví dụ cây đoạn một chiều (1D segment tree).
 
-![](https://img.halfrost.com/Blog/ArticleImage/153_1.png)
+![](/images/chuong-3/3.1.1.png)
 
 
 Gọi S là tập các đoạn thẳng một chiều. Sắp xếp các tọa độ đầu mút theo thứ tự tăng dần, ta được dãy {{< katex >}}x_{1},x_{2},\cdots ,x_{m} {{< /katex >}}. Mỗi khoảng sau khi bị các đầu mút này “cắt” ra được gọi là **khoảng đơn vị** (unit interval) — lưu ý: vị trí đúng tại mỗi đầu mút cũng được xem như một khoảng đơn vị riêng. Từ trái sang phải ta có:
@@ -30,7 +30,7 @@ Cấu trúc cây đoạn là một cây nhị phân. Mỗi nốt biểu diễn m
 - **Mỗi nốt (kể cả lá)** có một cấu trúc để lưu các đoạn. Nếu một đoạn S **bao phủ** Int(N) nhưng **không bao phủ** Int(parent(N)) (tức là nốt cha của N), thì S sẽ được lưu tại nốt N.
 
 
-![](https://img.halfrost.com/Blog/ArticleImage/153_2.png)
+![](/images/chuong-3/3.1.2.png)
 
 
 Cây đoạn là một cây nhị phân mà mỗi nốt đại diện cho một khoảng. Thông thường, một nốt sẽ lưu thông tin tổng hợp của một hoặc nhiều khoảng con để phục vụ truy vấn.
@@ -42,7 +42,7 @@ Nhiều bài toán yêu cầu trả lời dựa trên truy vấn theo phạm vi/
 
 Cây đoạn còn xuất hiện trong hình học tính toán (computational geometry) và [hệ thống thông tin địa lý (Geographic Information Systems)](https://en.wikipedia.org/wiki/Geographic_information_systems). Ví dụ, trong không gian có thể có rất nhiều điểm cách một điểm tham chiếu/gốc tọa độ một khoảng nào đó. Nếu ta cần tìm các điểm nằm trong một dải khoảng cách nhất định tới gốc, cách làm “thô” như dùng bảng tra cứu rồi quét tuyến tính qua tất cả điểm (hoặc tất cả khoảng cách, giả sử dùng bảng băm) sẽ rất tốn thời gian. Cây đoạn giúp truy vấn kiểu này trong thời gian logarit, trong khi bộ nhớ lại tương đối tiết kiệm. Những bài toán như vậy thuộc nhóm [tìm kiếm theo miền (range searching)](https://en.wikipedia.org/wiki/Range_searching). Việc giải hiệu quả rất quan trọng, nhất là khi dữ liệu động thay đổi liên tục (ví dụ: hệ thống radar điều phối không lưu). Phần dưới sẽ lấy ví dụ bài toán **truy vấn tổng đoạn** (Range Sum Query).
 
-![](https://img.halfrost.com/Blog/ArticleImage/153_3.png)
+![](/images/chuong-3/3.1.3.png)
 
 
 Hình trên minh hoạ cây đoạn dùng cho truy vấn theo phạm vi (range query).
@@ -61,7 +61,7 @@ Dùng một mảng kích thước khoảng {{< katex >}}4 \cdot n \approx 4n{{< 
 
 Với nốt ở chỉ số `i`, hai con của nó nằm ở {{< katex >}}(2 \cdot i + 1){{< /katex >}} và {{< katex >}}(2 \cdot i + 2){{< /katex >}}.
 
-![](https://img.halfrost.com/Blog/ArticleImage/153_4.png)
+![](/images/chuong-3/3.1.4.png)
 
 Cây đoạn khá trực quan và rất hợp để xây dựng bằng đệ quy (recursion).
 
@@ -72,7 +72,7 @@ Ta sẽ dùng mảng `tree[]` để lưu các nốt của cây đoạn (khởi t
 - Có thể “đệm” (pad) thêm `0` hoặc `null` vào `arr[]` để làm cho {{< katex >}}n = 2^{k} {{< /katex >}} (với `n` là tổng độ dài của `arr[]`, `k` là số nguyên không âm).
 - Chỉ số của các lá nằm trong khoảng {{< katex >}} [2^{k}-1, 2^{k+1}-2]{{< /katex >}}.
 
-![](https://img.halfrost.com/Blog/ArticleImage/153_5.png)
+![](/images/chuong-3/3.1.5.png)
 
 Code xây dựng cây đoạn như sau:
 
@@ -123,7 +123,7 @@ func (st *SegmentTree) rightChild(index int) int {
 
 Ví dụ với `arr[] = [18, 17, 13, 19, 15, 11, 20, 12, 33, 25]`, cây đoạn sẽ như sau:
 
-![](https://img.halfrost.com/Blog/ArticleImage/153_6.png)
+![](/images/chuong-3/3.1.6.png)
 
 Sau khi xây dựng xong, mảng `tree[]` có thể trông như sau:
 
@@ -174,7 +174,7 @@ func (st *SegmentTree) queryInTree(treeIndex, left, right, queryLeft, queryRight
 ```
 
 
-![](https://img.halfrost.com/Blog/ArticleImage/153_7.png)
+![](/images/chuong-3/3.1.7.png)
 
 
 Trong ví dụ trên, ta truy vấn tổng các phần tử trong đoạn \([2, 8]\). Không có nốt nào biểu diễn đúng toàn bộ \([2, 8]\), nhưng ta có thể “ghép” từ các đoạn con khớp hoàn toàn: \([2,2]\), \([3,4]\), \([5,7]\), \([8,8]\). Kiểm tra nhanh: tổng giá trị là \(13 + 19 + 15 + 11 + 20 + 12 + 33 = 123\). Tổng ở các nốt tương ứng là \(13 + 34 + 43 + 33 = 123\). Kết quả đúng.
@@ -269,7 +269,7 @@ func (st *SegmentTree) updateInTree(treeIndex, left, right, index, val int) {
 }
 ```
 
-![](https://img.halfrost.com/Blog/ArticleImage/153_8.png)
+![](/images/chuong-3/3.1.8.png)
 
 Trong ví dụ này, các phần tử ở chỉ số (trong dữ liệu gốc) 1, 3 và 6 lần lượt thay đổi +3, -1, +2. Bạn có thể thấy thay đổi được lan dần lên tới nốt gốc.
 
@@ -280,7 +280,7 @@ Trong ví dụ này, các phần tử ở chỉ số (trong dữ liệu gốc) 1
 Cây đoạn cập nhật một phần tử rất hiệu quả ( \(O(\log n)\) ). Nhưng nếu ta cần cập nhật cả một dải phần tử (một đoạn) thì sao? Nếu cập nhật từng phần tử độc lập, ta sẽ phải “đụng” đi đụng lại cùng một số nốt tổ tiên chung, gây lặp tính toán. Làm sao để tránh cập nhật trùng lặp đó?
 
 
-![](https://img.halfrost.com/Blog/ArticleImage/153_11.png)
+![](/images/chuong-3/3.1.9.png)
 
 Trong ví dụ trên, nốt gốc bị cập nhật 3 lần và nốt có giá trị 82 bị cập nhật 2 lần, vì cập nhật lá sẽ ảnh hưởng lên các nốt phía trên. Trường hợp xấu hơn là: ta cập nhật nhiều nhưng lại ít khi truy vấn vào những vùng đó, dẫn tới tốn thời gian cập nhật những nốt “ít dùng”. Thêm mảng `lazy[]` giúp giảm tính toán không cần thiết và chỉ xử lý khi thực sự cần.
 
@@ -356,7 +356,7 @@ func (st *SegmentTree) updateLazyInTree(treeIndex, left, right, updateLeft, upda
 Xét quá trình xây dựng: ta “chạm” tới mỗi lá (tương ứng mỗi phần tử của `arr[]`), nên tổng số nốt xử lý xấp xỉ \(2n\). Do đó, thời gian xây dựng là \(O(n)\).  
 Với cập nhật dạng đệ quy, mỗi bước ta loại bỏ khoảng một nửa đoạn đang xét để đi tới lá, tương tự tìm kiếm nhị phân (binary search) nên tốn \(O(\log n)\). Sau khi cập nhật lá, ta cập nhật các nốt tổ tiên dọc theo đường đi lên gốc, số lượng tỷ lệ với chiều cao cây.
 
-![](https://img.halfrost.com/Blog/ArticleImage/153_9.png)
+![](/images/chuong-3/3.1.10.png)
 
 
 Mốc \(4n\) nốt giúp đảm bảo ta có đủ chỗ để biểu diễn dạng “gần như” cây nhị phân đầy đủ (complete binary tree), nên chiều cao xấp xỉ \(\lceil \log(4n + 1) \rceil\). Vì vậy, cả truy vấn và cập nhật thường có độ phức tạp \(O(\log n)\).
@@ -366,7 +366,7 @@ Mốc \(4n\) nốt giúp đảm bảo ta có đủ chỗ để biểu diễn d�
 
 ### 1. Truy vấn tổng đoạn (Range Sum Queries)
 
-![](https://img.halfrost.com/Blog/ArticleImage/153_10.png)
+![](/images/chuong-3/3.1.11.png)
 
 
 Range Sum Queries là một nhánh con của [Range Queries](https://en.wikipedia.org/wiki/Range_query_(data_structures)). Ta có một mảng/chuỗi dữ liệu và cần xử lý các truy vấn đọc (read query) và cập nhật (update query) trên một đoạn chỉ số. Cả cây đoạn (Segment Tree) và cây Fenwick / BIT (Binary Indexed Tree, còn gọi là Fenwick Tree) đều giải dạng này rất nhanh.
