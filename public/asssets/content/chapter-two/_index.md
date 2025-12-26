@@ -7,7 +7,7 @@ weight: 2
 # Chương 2 – Chuyên đề thuật toán
 
 <p align='center'>
-<img src='https://img.halfrost.com/Leetcode/GO_LEARN_.png'>
+<img src='/images/chuong-2/index.png'>
 </p>
 
 Ban đầu tôi đã **ngây thơ** nghĩ rằng: chỉ cần giải hết toàn bộ các bài trên **LeetCode** là có thể hoàn thành trọn vẹn cuốn sách này.  

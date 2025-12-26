@@ -6,7 +6,7 @@ weight: 4
 
 # Danh sách liên kết (Linked List)
 
-![](https://img.halfrost.com/Leetcode/Linked_List.png)
+![](/images/chuong-2/2.04.png)
 
 
 - Khéo léo dựng **nút đầu giả (dummy head / sentinel node)** để giúp logic duyệt/xử lý thống nhất và dễ viết hơn.

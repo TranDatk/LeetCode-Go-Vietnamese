@@ -6,7 +6,7 @@ weight: 8
 
 # Quay lui (Backtracking)
 
-![](https://img.halfrost.com/Leetcode/Backtracking.png)
+![](/images/chuong-2/2.08.png)
 
 Các dạng bài toán:
 - Hoán vị (Permutations): Bài 46, 47, 60, 526, 996

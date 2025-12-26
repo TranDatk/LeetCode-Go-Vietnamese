@@ -6,7 +6,7 @@ weight: 3
 
 # Hai con trỏ (Two Pointers)
 
-![](https://img.halfrost.com/Leetcode/Two_pointers.png)
+![](/images/chuong-2/2.03.png)
 
 - Cách viết kinh điển của **hai con trỏ + cửa sổ trượt (two pointers + sliding window)**. Con trỏ phải liên tục dịch sang phải cho đến khi không thể dịch tiếp (điều kiện cụ thể tuỳ bài). Khi con trỏ phải chạm biên phải, bắt đầu dịch con trỏ trái để “nhả” biên trái của cửa sổ. Các bài: 3, 76, 209, 424, 438, 567, 713, 763, 845, 881, 904, 978, 992, 1004, 1040, 1052.
 

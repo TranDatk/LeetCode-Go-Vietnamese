@@ -20,7 +20,7 @@ Nếu dịch sát nghĩa thì đó là “sách nấu ăn” – một cuốn s�
 
 {{< /columns >}}
 
-<img src="https://books.halfrost.com/leetcode/logo.png" alt="logo" sizes="400" height="400" align="right" style="padding-left: 30px;"/>
+<img src="/images/book.png" alt="logo" sizes="400" height="400" align="right" style="padding-left: 30px;"/>
 
 ## Vì sao lại viết cuốn sách mã nguồn mở này
 
@@ -50,7 +50,7 @@ Kiến thức nếu học được thì sẽ theo ta suốt đời, còn nếu c
 
 Tác giả bắt đầu luyện LeetCode từ ngày 25/03/2019 đến 25/03/2020, tròn một năm. Kế hoạch ban đầu là mỗi ngày một bài. Trên thực tế có những ngày làm hơn một bài, cuối cùng hoàn thành hơn 600 bài:
 
-![](https://img.halfrost.com/Blog/ArticleImage/2019_leetcode.png)
+![](/images/profile.png)
 
 > Một lời nhắc nho nhỏ: ban đầu tác giả cứ nghĩ rằng mỗi ngày làm một bài thì biểu đồ submissions sẽ toàn màu xanh, nhưng sau đó mới phát hiện mình đã nhầm. Nếu bạn cũng muốn kiên trì để “phủ xanh” biểu đồ này, nhất định phải chú ý một điểm sau: server của LeetCode sử dụng múi giờ +0, và biểu đồ này cũng được tính theo múi giờ đó. Điều này có nghĩa là ở Trung Quốc, trước 8 giờ sáng thì vẫn được tính là ngày hôm trước!  
 >  
@@ -96,7 +96,7 @@ Nếu trong sách có nội dung thiếu sót, hoan nghênh bạn nhấn nút ed
 
 Cùng nhau bắt đầu luyện LeetCode thôi~
 
-![](https://img.halfrost.com/Blog/ArticleImage/hello_leetcode.png)
+![](/images/logo.png)
 
 Tác phẩm này được phát hành theo giấy phép  
 [Creative Commons Attribution-NonCommercial-NoDerivatives (BY-NC-ND) 4.0 International](https://creativecommons.org/licenses/by-nc-nd/4.0/legalcode.zh-Hans)

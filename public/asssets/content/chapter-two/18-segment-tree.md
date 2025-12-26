@@ -6,7 +6,7 @@ weight: 18
 
 # Cây đoạn (Segment Tree)
 
-![](https://img.halfrost.com/Leetcode/Segment_Tree.png)
+![](/images/chuong-2/2.18.png)
 
 - Cách hiện thực **cây đoạn bằng mảng (array-based segment tree)**: trừu tượng hoá phần `pushUp` (gộp 2 node) để có thể áp dụng cho nhiều phép toán (cộng, `max`, `min`, ...). Bài 218, 303, 307, 699.
 - Cách viết kinh điển của **cây đoạn đếm (counting segment tree)**. Bài 315, 327, 493.

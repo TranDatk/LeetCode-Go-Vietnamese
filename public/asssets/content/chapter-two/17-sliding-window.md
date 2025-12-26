@@ -6,7 +6,7 @@ weight: 17
 
 # Cửa sổ trượt (Sliding Window)
 
-![](https://img.halfrost.com/Leetcode/Sliding_Window.png)
+![](/images/chuong-2/2.17.png)
 
 - Cách viết kinh điển của **cửa sổ trượt (sliding window) với hai con trỏ**: con trỏ phải liên tục dịch sang phải đến khi không thể dịch tiếp (điều kiện tuỳ bài). Khi con trỏ phải chạm biên phải, bắt đầu dịch con trỏ trái để “nhả” biên trái của cửa sổ. Các bài: 3, 76, 209, 424, 438, 567, 713, 763, 845, 881, 904, 978, 992, 1004, 1040, 1052.
 

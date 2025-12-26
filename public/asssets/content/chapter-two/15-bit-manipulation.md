@@ -6,7 +6,7 @@ weight: 15
 
 # Thao tác bit (Bit Manipulation)
 
-![](https://img.halfrost.com/Leetcode/Bit_Manipulation.png)
+![](/images/chuong-2/2.15.png)
 
 - Đặc tính của phép **XOR**. Bài 136, 268, 389, 421.
 

@@ -6,7 +6,7 @@ weight: 19
 
 # Cây chỉ mục nhị phân (Binary Indexed Tree)
 
-![](https://img.halfrost.com/Leetcode/Binary_Indexed_Tree.png)
+![](/images/chuong-2/2.19.png)
 
 | STT      | Tiêu đề | Lời giải  | Độ khó  | Độ phức tạp thời gian | Độ phức tạp bộ nhớ  |Yêu thích | Tỷ lệ AC (Acceptance) |
 |:--------:|:------- | :--------: | :----------: | :----: | :-----: | :-----: |:-----: |

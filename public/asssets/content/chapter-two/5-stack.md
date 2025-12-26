@@ -6,7 +6,7 @@ weight: 5
 
 # Ngăn xếp (Stack)
 
-![](https://img.halfrost.com/Leetcode/Stack.png)
+![](/images/chuong-2/2.05.png)
 
 - Bài toán **khớp dấu ngoặc (parentheses matching)** và các bài tương tự. Bài 20, 921, 1021.
 - Các thao tác cơ bản của ngăn xếp: **đẩy (push)** và **lấy ra (pop)**. Bài 71, 150, 155, 224, 225, 232, 946, 1047.

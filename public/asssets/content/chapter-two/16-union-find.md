@@ -6,7 +6,7 @@ weight: 16
 
 # Hợp nhất - tìm đại diện (Union Find)
 
-![](https://img.halfrost.com/Leetcode/Union_Find.png)
+![](/images/chuong-2/2.16.png)
 
 - Dùng linh hoạt tư duy **Union Find / DSU** và nắm vững [template]({{< relref "/ChapterThree/UnionFind.md" >}}). Trong template có 2 cách triển khai:
 	- **Path compression + union by rank**

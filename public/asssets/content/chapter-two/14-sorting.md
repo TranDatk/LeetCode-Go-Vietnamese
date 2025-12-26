@@ -6,7 +6,7 @@ weight: 14
 
 # Sắp xếp (Sorting)
 
-![](https://img.halfrost.com/Leetcode/Sort.png)
+![](/images/chuong-2/2.14.png)
 
 - Hiểu sâu về **quicksort nhiều đường (multi-way quicksort)**. Bài 75.
 - Sắp xếp **danh sách liên kết**: **sắp xếp chèn** (bài 147) và **sắp xếp trộn** (bài 148).
