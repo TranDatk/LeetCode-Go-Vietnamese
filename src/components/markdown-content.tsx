@@ -363,6 +363,57 @@ export function MarkdownContent({ content, title }: MarkdownContentProps) {
               </a>
             );
           },
+          h1({ children, ...props }: any) {
+            // Process inline katex in h1 headers
+            if (typeof children === 'string') {
+              const processed = processTextWithInlineKatex(children);
+              return <h1 {...props}>{processed}</h1>;
+            }
+            if (Array.isArray(children)) {
+              const processed = children.map((child) => {
+                if (typeof child === 'string') {
+                  return processTextWithInlineKatex(child);
+                }
+                return child;
+              }).flat();
+              return <h1 {...props}>{processed}</h1>;
+            }
+            return <h1 {...props}>{children}</h1>;
+          },
+          h2({ children, ...props }: any) {
+            // Process inline katex in h2 headers
+            if (typeof children === 'string') {
+              const processed = processTextWithInlineKatex(children);
+              return <h2 {...props}>{processed}</h2>;
+            }
+            if (Array.isArray(children)) {
+              const processed = children.map((child) => {
+                if (typeof child === 'string') {
+                  return processTextWithInlineKatex(child);
+                }
+                return child;
+              }).flat();
+              return <h2 {...props}>{processed}</h2>;
+            }
+            return <h2 {...props}>{children}</h2>;
+          },
+          h3({ children, ...props }: any) {
+            // Process inline katex in h3 headers
+            if (typeof children === 'string') {
+              const processed = processTextWithInlineKatex(children);
+              return <h3 {...props}>{processed}</h3>;
+            }
+            if (Array.isArray(children)) {
+              const processed = children.map((child) => {
+                if (typeof child === 'string') {
+                  return processTextWithInlineKatex(child);
+                }
+                return child;
+              }).flat();
+              return <h3 {...props}>{processed}</h3>;
+            }
+            return <h3 {...props}>{children}</h3>;
+          },
           p({ children, ...props }: any) {
             // Process inline katex in paragraphs
             if (typeof children === 'string') {

@@ -25,13 +25,13 @@ Nếu có nhiều trang có cùng số lần truy cập và cần loại bỏ, t
 Ta có thể thấy: **với LFU, cập nhật và chèn trang mới có thể xảy ra ở bất kỳ vị trí nào trong danh sách; còn xóa/loại vẫn diễn ra ở cuối danh sách**.
 
 
-## Cách 1: Get \(O(1)\) / Put \(O(1)\)
+## Cách 1: Get {{< katex >}}O(1){{< /katex >}} / Put {{< katex >}}O(1){{< /katex >}}
 
-LFU cũng yêu cầu truy vấn thật nhanh, tốt nhất trong \(O(1)\). Ta tiếp tục dùng **map** để tra cứu theo key. Thao tác sửa và xóa cũng cần \(O(1)\), nên tiếp tục dùng **danh sách liên kết đôi (doubly linked list)**, và có thể tái sử dụng `container/list`.  
+LFU cũng yêu cầu truy vấn thật nhanh, tốt nhất trong {{< katex >}}O(1){{< /katex >}}. Ta tiếp tục dùng **map** để tra cứu theo key. Thao tác sửa và xóa cũng cần {{< katex >}}O(1){{< /katex >}}, nên tiếp tục dùng **danh sách liên kết đôi (doubly linked list)**, và có thể tái sử dụng `container/list`.  
 Vì LFU cần lưu số lần truy cập (frequency), nên mỗi nút (node) ngoài `key` và `value` sẽ lưu thêm `frequency`.
 
 Ta còn một vấn đề nữa: làm sao “sắp” theo frequency? Với cùng frequency thì lại phải theo thứ tự cũ–mới.  
-Nếu bắt đầu nghĩ tới thuật toán sắp xếp (sorting) thì bạn đang đi lệch hướng, vì sorting ít nhất cũng \(O(n \log n)\). Nhìn lại cơ chế LFU sẽ thấy: nó chỉ quan tâm tới **frequency nhỏ nhất** (min frequency). Thứ tự giữa các frequency khác nhau không cần “sắp” toàn cục.  
+Nếu bắt đầu nghĩ tới thuật toán sắp xếp (sorting) thì bạn đang đi lệch hướng, vì sorting ít nhất cũng {{< katex >}}O(n \log n){{< /katex >}}. Nhìn lại cơ chế LFU sẽ thấy: nó chỉ quan tâm tới **frequency nhỏ nhất** (min frequency). Thứ tự giữa các frequency khác nhau không cần "sắp" toàn cục.  
 Vì vậy, ta dùng một biến `min` để lưu **tần suất nhỏ nhất (min frequency)**. Khi cần loại bỏ, chỉ cần nhìn `min` là biết nhóm cần xoá.  
 Với các phần tử cùng frequency, ta dùng danh sách liên kết đôi để giữ thứ tự cũ–mới: thứ tự chèn trong list chính là thứ tự thời gian. Mỗi frequency tương ứng một danh sách; vì có thể có nhiều frequency nên sẽ có nhiều danh sách. Ta dùng một map để ánh xạ `frequency -> list`. Khi xóa theo `min`, ta lấy đúng list tương ứng và xóa phần tử “cũ nhất” ở cuối list. Như vậy giải quyết được thao tác xóa của LFU.
 
@@ -154,7 +154,7 @@ Sau khi submit, code đã qua toàn bộ test.
 ![](/images/chuong-3/3.4.5.png)
 
 
-## Cách 2: Get \(O(capacity)\) / Put \(O(capacity)\)
+## Cách 2: Get {{< katex >}}O(capacity){{< /katex >}} / Put {{< katex >}}O(capacity){{< /katex >}}
 
 Một hướng khác cho LFU là dùng [Index Priority Queue](https://algs4.cs.princeton.edu/24pq/). Đừng bị cái tên làm “hù”: Index Priority Queue = **map + hàng đợi ưu tiên (Priority Queue)**, chỉ vậy thôi.
 
@@ -250,7 +250,7 @@ func (pq *PriorityQueue) update(item *Item, value int, frequency int, count int)
 Trong `Less()`, `frequency` được so theo tăng dần; nếu `frequency` bằng nhau thì so `count` tăng dần. Vì vậy phần tử có `frequency` nhỏ nhất sẽ ở đỉnh heap; nếu `frequency` bằng nhau thì phần tử có `count` nhỏ nhất (cũ nhất) gần đỉnh hơn.
 
 Trong `Swap()`, nhớ cập nhật `index`. Trong `Push()`, `index` của phần tử mới chính là độ dài queue trước khi append.  
-`update()` gọi `heap.Fix()`. `Fix()` rẻ hơn so với `Remove()` rồi `Push()` lại một item mới, nên thường được ưu tiên. Thao tác này có độ phức tạp \(O(\log n)\).
+`update()` gọi `heap.Fix()`. `Fix()` rẻ hơn so với `Remove()` rồi `Push()` lại một item mới, nên thường được ưu tiên. Thao tác này có độ phức tạp {{< katex >}}O(\log n){{< /katex >}}.
 
 Như vậy ta đã duy trì được một Index Priority Queue tối thiểu. Hàm `Get` rất đơn giản:
 
@@ -299,7 +299,7 @@ func (this *LFUCache) Put(key int, value int) {
 ```
 
 
-Với cách dùng min-heap, phần tác giả ghi rằng Put có độ phức tạp \(O(capacity)\), Get cũng \(O(capacity)\), kém hơn bản dùng 2 map. Nhưng khá thú vị là phiên bản min-heap lại “beats 100%”.
+Với cách dùng min-heap, phần tác giả ghi rằng Put có độ phức tạp {{< katex >}}O(capacity){{< /katex >}}, Get cũng {{< katex >}}O(capacity){{< /katex >}}, kém hơn bản dùng 2 map. Nhưng khá thú vị là phiên bản min-heap lại "beats 100%".
 
 ![](/images/chuong-3/3.4.6.png)
 
